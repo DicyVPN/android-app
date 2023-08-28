@@ -6,7 +6,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -18,6 +17,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.dicyvpn.android.ui.theme.DicyVPNTheme
+import com.dicyvpn.android.ui.theme.components.Button
+import com.dicyvpn.android.ui.theme.components.ButtonColor
+import com.dicyvpn.android.ui.theme.components.ButtonSize
+import com.dicyvpn.android.ui.theme.components.ButtonTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,7 +44,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
             text = "Hello $name!",
             modifier = modifier
         )
-        Button(onClick = { value = !value }) {
+        Button(onClick = { value = !value }, theme = ButtonTheme.LIGHT, color = ButtonColor.GREEN, size = ButtonSize.BIG) {
             Text(text = "Click me")
         }
         Text(
