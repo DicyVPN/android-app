@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">DicyVPN</string>
+    <string name="world_map">World Map</string>
+    <string name="dicyvpn_logo">DicyVPN Logo</string>
+    <string name="latency">Latency</string>
+    <string name="uptime">Uptime</string>
 </resources>
