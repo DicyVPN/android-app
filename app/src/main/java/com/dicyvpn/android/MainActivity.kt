@@ -13,9 +13,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -93,7 +96,18 @@ fun Home(modifier: Modifier = Modifier) {
         }
         Surface(modifier.fillMaxWidth(), color = Gray800) {
             Column(modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Text(style = Typography.bodyMedium, text = "Connesso")
+                Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Surface(color = BrightGreen, contentColor = Gray800, modifier = modifier.clip(CircleShape)) {
+                        Icon(
+                            imageVector = Icons.Rounded.Check,
+                            contentDescription = null,
+                            modifier = modifier
+                                .padding(2.dp)
+                                .size(14.dp)
+                        )
+                    }
+                    Text(style = Typography.bodyMedium, text = "Connesso")
+                }
                 Surface(
                     modifier = modifier
                         .fillMaxWidth()
@@ -103,12 +117,16 @@ fun Home(modifier: Modifier = Modifier) {
                     Text("Germania")
                     Spacer(modifier = modifier.weight(1f))
                     Text(fontFamily = FontFamily.Monospace, text = "DE_01")
-                    Image(painterResource(id = R.drawable.flag_de), modifier = modifier.width(24.dp).clip(Shapes.small), contentDescription = null)
+                    Image(
+                        painterResource(id = R.drawable.flag_de), modifier = modifier
+                            .width(24.dp)
+                            .clip(Shapes.small), contentDescription = null
+                    )
                 }
                 Button({}, ButtonTheme.DARK, ButtonColor.RED, ButtonSize.NORMAL, modifier.fillMaxWidth()) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = Icons.Default.Close,
+                            imageVector = Icons.Rounded.Close,
                             contentDescription = null
                         )
                         Text("Disconnetti")
