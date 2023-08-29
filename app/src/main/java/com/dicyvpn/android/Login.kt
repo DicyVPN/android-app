@@ -1,6 +1,7 @@
 package com.dicyvpn.android
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,8 +9,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -59,8 +63,20 @@ fun Login(navController: NavHostController, modifier: Modifier = Modifier) {
                 .scale(1.5f)
                 .alpha(0.7f)
         )
-        Row(modifier = modifier.fillMaxSize(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-            Surface(modifier = modifier.padding(48.dp), color = Gray600, contentColor = Color.White, shape = Shapes.large, shadowElevation = 8.dp) {
+        Row(
+            modifier = modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                modifier = modifier.padding(48.dp),
+                color = Gray600,
+                contentColor = Color.White,
+                shape = Shapes.large,
+                shadowElevation = 8.dp
+            ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -78,7 +94,10 @@ fun Login(navController: NavHostController, modifier: Modifier = Modifier) {
                         onValueChange = { email = it },
                         label = { Text(stringResource(R.string.email)) },
                         shape = Shapes.medium,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next)
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Email,
+                            imeAction = ImeAction.Next
+                        )
                     )
                     TextField(
                         value = password,
@@ -99,7 +118,11 @@ fun Login(navController: NavHostController, modifier: Modifier = Modifier) {
                         Text(stringResource(R.string.login))
                     }
                     Column(modifier = modifier.fillMaxWidth()) {
-                        Text("Create an account", color = Gray200, style = Typography.bodySmall) // TODO: should be underlined
+                        Text(
+                            "Create an account",
+                            color = Gray200,
+                            style = Typography.bodySmall
+                        ) // TODO: should be underlined
                         Text("Recover your password", color = Gray200, style = Typography.bodySmall)
                     }
                 }
