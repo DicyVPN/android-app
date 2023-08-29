@@ -13,12 +13,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val DarkColorScheme = darkColorScheme(
+private val colorScheme = darkColorScheme(
     primary = Blue500,
     onPrimary = Color.White,
     secondary = Gray200,
     tertiary = Gray900,
     background = Gray500,
+    surface = Gray600,
+    onSurface = Color.Black, // Also text inside light text fields, be warned if you change this
+    surfaceVariant = Gray100,
+    onSurfaceVariant = Color.Black
 )
 
 @Composable
@@ -33,7 +37,7 @@ fun DicyVPNTheme(
             dynamicDarkColorScheme(context)
         }
 
-        else -> DarkColorScheme
+        else -> colorScheme
     }
     val view = LocalView.current
     if (!view.isInEditMode) {
