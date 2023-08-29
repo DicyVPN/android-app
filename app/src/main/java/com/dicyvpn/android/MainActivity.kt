@@ -24,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +36,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.dicyvpn.android.ui.theme.BrightGreen
 import com.dicyvpn.android.ui.theme.DicyVPNTheme
 import com.dicyvpn.android.ui.theme.Gray600
@@ -45,18 +51,55 @@ import com.dicyvpn.android.ui.theme.components.Button
 import com.dicyvpn.android.ui.theme.components.ButtonColor
 import com.dicyvpn.android.ui.theme.components.ButtonSize
 import com.dicyvpn.android.ui.theme.components.ButtonTheme
+import com.dicyvpn.android.ui.theme.rememberPreference
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             DicyVPNTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    Home()
+                val navController = rememberNavController()
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    NavHost(navController = navController, startDestination = "startup") {
+                        composable("startup") { Startup(navController) }
+                        composable("login") { Login(navController) }
+                        composable("home") { Home() }
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun Startup(navController: NavHostController) {
+    val refreshToken by rememberPreference(stringPreferencesKey("auth.refreshToken"), "")
+    if (refreshToken.isNotEmpty()) {
+        navController.navigate("home") {
+            popUpTo(0)
+        }
+    } else {
+        navController.navigate("login") {
+            popUpTo(0)
+        }
+    }
+}
+
+@Composable
+fun Login(navController: NavHostController, modifier: Modifier = Modifier) {
+    Button(
+        onClick = {
+            navController.navigate("home")
+        },
+        theme = ButtonTheme.DARK,
+        color = ButtonColor.BLUE,
+        size = ButtonSize.BIG,
+        modifier = modifier
+    ) {
+        Text("Go to home")
     }
 }
 
@@ -70,7 +113,11 @@ fun Home(modifier: Modifier = Modifier) {
         Surface(
             modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp), color = Gray600, contentColor = Color.White, shape = Shapes.medium, shadowElevation = 8.dp
+                .padding(horizontal = 8.dp),
+            color = Gray600,
+            contentColor = Color.White,
+            shape = Shapes.medium,
+            shadowElevation = 8.dp
         ) {
             Image(
                 painter = painterResource(id = R.drawable.full_logo),
@@ -96,8 +143,16 @@ fun Home(modifier: Modifier = Modifier) {
         }
         Surface(modifier.fillMaxWidth(), color = Gray800) {
             Column(modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Surface(color = BrightGreen, contentColor = Gray800, modifier = modifier.clip(CircleShape)) {
+                Row(
+                    modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        color = BrightGreen,
+                        contentColor = Gray800,
+                        modifier = modifier.clip(CircleShape)
+                    ) {
                         Icon(
                             imageVector = Icons.Rounded.Check,
                             contentDescription = null,
@@ -123,7 +178,13 @@ fun Home(modifier: Modifier = Modifier) {
                             .clip(Shapes.small), contentDescription = null
                     )
                 }
-                Button({}, ButtonTheme.DARK, ButtonColor.RED, ButtonSize.NORMAL, modifier.fillMaxWidth()) {
+                Button(
+                    {},
+                    ButtonTheme.DARK,
+                    ButtonColor.RED,
+                    ButtonSize.NORMAL,
+                    modifier.fillMaxWidth()
+                ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Rounded.Close,
