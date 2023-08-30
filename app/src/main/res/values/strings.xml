@@ -16,5 +16,5 @@
     <string name="reached_the_maximum_number_of_devices">You\'ve reached the maximum number of devices</string>
     <string name="take_a_look_at_our_plans">Take a look at our plans</string>
     <string name="check_your_devices_list">Check your devices list</string>
-    <string name="disconnetti">Disconnetti</string>
+    <string name="disconnect">Disconnect</string>
 </resources>
