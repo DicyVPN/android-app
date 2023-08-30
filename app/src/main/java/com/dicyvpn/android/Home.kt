@@ -19,6 +19,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,6 +30,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.datastore.preferences.core.stringPreferencesKey
 import com.dicyvpn.android.ui.theme.BrightGreen
 import com.dicyvpn.android.ui.theme.Gray600
 import com.dicyvpn.android.ui.theme.Gray800
@@ -38,6 +40,7 @@ import com.dicyvpn.android.ui.theme.components.Button
 import com.dicyvpn.android.ui.theme.components.ButtonColor
 import com.dicyvpn.android.ui.theme.components.ButtonSize
 import com.dicyvpn.android.ui.theme.components.ButtonTheme
+import com.dicyvpn.android.ui.theme.rememberPreference
 
 @Composable
 fun Home(modifier: Modifier = Modifier) {
@@ -126,9 +129,19 @@ fun Home(modifier: Modifier = Modifier) {
                             imageVector = Icons.Rounded.Close,
                             contentDescription = null
                         )
-                        Text("Disconnetti")
+                        Text(stringResource(R.string.disconnetti))
                     }
                 }
+                val token by rememberPreference(stringPreferencesKey("auth.token"), "")
+                val refreshToken by rememberPreference(stringPreferencesKey("auth.refreshToken"), "")
+                val refreshTokenId by rememberPreference(stringPreferencesKey("auth.refreshTokenId"), "")
+                val accountId by rememberPreference(stringPreferencesKey("auth.accountId"), "")
+                val privateKey by rememberPreference(stringPreferencesKey("auth.privateKey"), "")
+                Text("Token: $token")
+                Text("Refresh Token: $refreshToken")
+                Text("Refresh Token ID: $refreshTokenId")
+                Text("Account ID: $accountId")
+                Text("Private Key: $privateKey")
             }
         }
     }

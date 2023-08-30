@@ -14,15 +14,16 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val colorScheme = darkColorScheme(
-    primary = Blue500,
+    primary = Blue300,
     onPrimary = Color.White,
     secondary = Gray200,
     tertiary = Gray900,
     background = Gray500,
-    surface = Gray600,
-    onSurface = Color.Black, // Also text inside light text fields, be warned if you change this
-    surfaceVariant = Gray100,
-    onSurfaceVariant = Color.Black
+    surface = Gray700,
+    onSurface = Color.White, // Also text inside text fields
+    surfaceVariant = Gray800, // Also text field background
+    onSurfaceVariant = Gray200, // Also text fields labels
+    error = Red400
 )
 
 @Composable
@@ -44,6 +45,7 @@ fun DicyVPNTheme(
         SideEffect {
             val window = (view.context as Activity).window
             window.statusBarColor = Gray600.toArgb()
+            window.navigationBarColor = Gray800.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
         }
     }

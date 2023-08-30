@@ -4,8 +4,9 @@ import android.app.Application
 import android.os.Build
 import android.util.Log
 import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.preferencesDataStore
+import androidx.datastore.preferences.preferencesDataStoreFile
 import com.wireguard.android.backend.GoBackend
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,11 +19,14 @@ import java.util.Locale
 class DicyVPN : Application() {
     private val coroutineScope = CoroutineScope(Job() + Dispatchers.Main.immediate)
     private var backend: GoBackend? = null
-    private val preferencesDataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
+    private lateinit var preferencesDataStore: DataStore<Preferences>
 
     override fun onCreate() {
         super.onCreate()
         Log.i(TAG, USER_AGENT)
+        preferencesDataStore = PreferenceDataStoreFactory.create {
+            applicationContext.preferencesDataStoreFile("settings")
+        }
         coroutineScope.launch(Dispatchers.IO) {
             try {
                 backend = GoBackend(applicationContext)
@@ -58,8 +62,6 @@ class DicyVPN : Application() {
         fun getPreferencesDataStore() = get().preferencesDataStore
 
         fun getBackend() = get().backend
-
-        fun getCoroutineScope() = get().coroutineScope
     }
 
     init {

@@ -7,4 +7,14 @@
     <string name="email">Email</string>
     <string name="password">Password</string>
     <string name="login">Login</string>
+    <string name="create_an_account">Create an account</string>
+    <string name="recover_your_password">Recover your password</string>
+    <string name="hide_password">Hide password</string>
+    <string name="show_password">Show password</string>
+    <string name="dialog_close">Close</string>
+    <string name="no_active_subscription">You don\'t have an active subscription</string>
+    <string name="reached_the_maximum_number_of_devices">You\'ve reached the maximum number of devices</string>
+    <string name="take_a_look_at_our_plans">Take a look at our plans</string>
+    <string name="check_your_devices_list">Check your devices list</string>
+    <string name="disconnetti">Disconnetti</string>
 </resources>
