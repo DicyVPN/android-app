@@ -4,17 +4,16 @@ import android.content.Context
 import android.util.Base64
 import android.util.Patterns
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -105,7 +104,8 @@ fun Login(navController: NavHostController, modifier: Modifier = Modifier) {
             Surface(
                 modifier = modifier
                     .padding(48.dp)
-                    .imePadding(),
+                    .imePadding()
+                    .widthIn(max = 480.dp),
                 color = Gray600,
                 contentColor = Color.White,
                 shape = Shapes.large,
@@ -173,13 +173,13 @@ fun Login(navController: NavHostController, modifier: Modifier = Modifier) {
                     }
                     Column(
                         modifier = modifier
-                            .fillMaxWidth()
+                            .defaultMinSize(
+                                minWidth = TextFieldDefaults.MinWidth
+                            )
                             .padding(top = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         // TODO: make clickable
-                        Text(stringResource(R.string.create_an_account), color = Gray200, style = TextStyle(textDecoration = TextDecoration.Underline), modifier = modifier.clickable {
-                            navController.navigate("home")
-                        })
+                        Text(stringResource(R.string.create_an_account), color = Gray200, style = TextStyle(textDecoration = TextDecoration.Underline))
                         // TODO: make clickable
                         Text(stringResource(R.string.recover_your_password), color = Gray200, style = TextStyle(textDecoration = TextDecoration.Underline))
                     }
@@ -297,6 +297,7 @@ fun login(context: Context, email: String, password: String, navController: NavH
 }
 
 @Preview
+@Preview(name = "TV", device = "id:tv_1080p")
 @Composable
 fun LoginPreview() {
     DicyVPNTheme {
