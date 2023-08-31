@@ -11,7 +11,7 @@ android {
         applicationId = "com.dicyvpn.android"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
+        versionCode = 4
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -22,8 +22,10 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            // signingConfig = signingConfigs.getByName("debug") // only enable when debugging release builds
         }
     }
     compileOptions {
