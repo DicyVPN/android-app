@@ -17,4 +17,6 @@
     <string name="take_a_look_at_our_plans">Take a look at our plans</string>
     <string name="check_your_devices_list">Check your devices list</string>
     <string name="disconnect">Disconnect</string>
+    <string name="recommended_servers">Recommended Servers</string>
+    <string name="other_servers">Other Servers</string>
 </resources>
