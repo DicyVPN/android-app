@@ -1,7 +1,6 @@
 package com.dicyvpn.android
 
 import android.content.Context
-import android.util.Base64
 import android.util.Patterns
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -21,7 +20,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
@@ -53,9 +51,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.navigation.NavHostController
+import com.dicyvpn.android.api.API
 import com.dicyvpn.android.api.PublicAPI
 import com.dicyvpn.android.ui.theme.DicyVPNTheme
 import com.dicyvpn.android.ui.theme.Gray200
@@ -66,13 +63,11 @@ import com.dicyvpn.android.ui.theme.components.Button
 import com.dicyvpn.android.ui.theme.components.ButtonColor
 import com.dicyvpn.android.ui.theme.components.ButtonSize
 import com.dicyvpn.android.ui.theme.components.ButtonTheme
-import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Login(navController: NavHostController, modifier: Modifier = Modifier) {
     var email by rememberSaveable { mutableStateOf("") }
@@ -236,23 +231,7 @@ fun login(context: Context, email: String, password: String, navController: NavH
         override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
             if (response.isSuccessful) {
                 try {
-                    val token = response.headers().get("X-Auth-Token")!!
-                    val refreshToken = response.headers().get("X-Auth-Refresh-Token")!!
-                    val privateKey = response.headers().get("X-Auth-Private-Key")!!
-                    val payload = token.split(".")[1]
-                    val json = JSONObject(String(Base64.decode(payload, Base64.DEFAULT)))
-                    val refreshTokenId = json.getString("refreshTokenId")
-                    val accountId = json.getString("_id")
-
-                    runBlocking {
-                        DicyVPN.getPreferencesDataStore().edit {
-                            it[stringPreferencesKey("auth.token")] = token
-                            it[stringPreferencesKey("auth.refreshToken")] = refreshToken
-                            it[stringPreferencesKey("auth.refreshTokenId")] = refreshTokenId
-                            it[stringPreferencesKey("auth.accountId")] = accountId
-                            it[stringPreferencesKey("auth.privateKey")] = privateKey
-                        }
-                    }
+                    API.setAuthInfo(response.headers())
 
                     navController.navigate("home") {
                         popUpTo(0)
