@@ -20,6 +20,7 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import java.lang.ref.WeakReference
 
+const val TAG = "DicyVPN/API"
 const val BASE_URL = "https://api.dicyvpn.com"
 const val USER_AGENT = "DicyVPN Android v." + BuildConfig.VERSION_NAME
 
@@ -37,6 +38,7 @@ interface PublicAPI {
         private var apiService: WeakReference<PublicAPI> = WeakReference(null)
         fun get(): PublicAPI {
             if (apiService.get() == null) {
+                Log.i(TAG, "Creating new PublicAPI service")
                 val client = OkHttpClient.Builder()
                     .addNetworkInterceptor { chain ->
                         chain.proceed(
@@ -73,6 +75,7 @@ interface API {
         private var apiService: WeakReference<API> = WeakReference(null)
         fun get(): API {
             if (apiService.get() == null) {
+                Log.i(TAG, "Creating new API service")
                 val flowToken = DicyVPN.getPreferencesDataStore().data.map { it[stringPreferencesKey("auth.token")] ?: "" }
 
                 val client = OkHttpClient.Builder()
@@ -90,9 +93,8 @@ interface API {
                     }
                     .addInterceptor { chain ->
                         val response = chain.proceed(chain.request())
-                        Log.i("DicyVPN/API", "Response code: ${response.code()}")
                         if (response.code() == 401) { // Unauthorized, refresh the token
-                            Log.i("DicyVPN/API", "Refreshing token")
+                            Log.i(TAG, "Token has expired, refreshing")
                             val (refreshToken, refreshTokenId, accountId) = runBlocking {
                                 DicyVPN.getPreferencesDataStore().data.map {
                                     Triple(
@@ -105,13 +107,13 @@ interface API {
                             val refreshResponse = PublicAPI.get().refreshToken(PublicAPI.RefreshTokenRequest(refreshToken, refreshTokenId, accountId)).execute()
 
                             if (!refreshResponse.isSuccessful) {
-                                Log.e("DicyVPN/API", "Failed to refresh token, logging out")
+                                Log.e(TAG, "Failed to refresh token, logging out")
                                 removeAuthInfo()
                                 return@addInterceptor response
                             }
 
                             setNewToken(refreshResponse.headers())
-                            Log.i("DicyVPN/API", "Retrying request with new token")
+                            Log.i(TAG, "Token has been refreshed, retrying request")
                             response.close()
                             chain.proceed(chain.request())
                         } else {
@@ -150,6 +152,7 @@ interface API {
                     it[stringPreferencesKey("auth.privateKey")] = privateKey
                 }
             }
+            Log.i(TAG, "Token has been set, accountId: $accountId")
         }
 
         @Throws(Exception::class)
@@ -161,6 +164,7 @@ interface API {
                     it[stringPreferencesKey("auth.token")] = token
                 }
             }
+            Log.i(TAG, "Token has been refreshed")
         }
 
         @Throws(Exception::class)
