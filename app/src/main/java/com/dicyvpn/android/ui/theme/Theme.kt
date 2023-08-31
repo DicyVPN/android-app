@@ -23,7 +23,7 @@ private val colorScheme = darkColorScheme(
     onSurface = Color.White, // Also text inside text fields
     surfaceVariant = Gray800, // Also text field background
     onSurfaceVariant = Gray200, // Also text fields labels
-    error = Red400
+    error = Red300
 )
 
 @Composable
