@@ -42,6 +42,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -70,6 +71,7 @@ import com.dicyvpn.android.ui.theme.components.ButtonTheme
 import com.dicyvpn.android.ui.theme.components.Flag
 import com.dicyvpn.android.ui.theme.components.Server
 import com.dicyvpn.android.vpn.Status
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -82,8 +84,7 @@ fun Home(modifier: Modifier = Modifier) {
     var secondaryServers by rememberSaveable { mutableStateOf<Map<String, List<API.ServerList.Server>>>(emptyMap()) }
     var expandedCountry by rememberSaveable { mutableStateOf<String?>(null) }
 
-//    val status = Status.CONNECTED
-    val status = Status.CONNECTING
+    val status by remember { DicyVPN.getStatus() }
     val isVPNLoading = status == Status.CONNECTING || status == Status.DISCONNECTING
     val connectButtonLabel = stringResource(
         when (status) {
@@ -96,12 +97,22 @@ fun Home(modifier: Modifier = Modifier) {
 
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState()
+    val scrollState = rememberScrollState()
+    val onServerClick = {
+        scope.launch {
+            scrollState.animateScrollTo(0)
+        }
+        scope.launch {
+            scaffoldState.bottomSheetState.partialExpand()
+        }
+    }
+
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
         sheetPeekHeight = 288.dp,
         sheetShadowElevation = 8.dp,
         sheetContent = {
-            Column(modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(modifier.verticalScroll(scrollState), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Surface(modifier.fillMaxWidth(), color = Gray800, shadowElevation = 4.dp) {
                     Column(modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         Row(
@@ -182,7 +193,7 @@ fun Home(modifier: Modifier = Modifier) {
                             primaryServers.forEach { (_, servers) ->
                                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                     servers.forEach { server ->
-                                        Server(modifier, server)
+                                        Server(modifier.clickable { onServerClick() }, server)
                                     }
                                 }
                             }
@@ -216,7 +227,7 @@ fun Home(modifier: Modifier = Modifier) {
                                     AnimatedVisibility(expandedCountry == country) {
                                         Column(modifier.padding(bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                             servers.forEach { server ->
-                                                Server(modifier, server)
+                                                Server(modifier.clickable { onServerClick() }, server)
                                             }
                                         }
                                     }

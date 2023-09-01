@@ -1,11 +1,13 @@
 package com.dicyvpn.android.api
 
+import android.os.Parcelable
 import android.util.Base64
 import android.util.Log
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.dicyvpn.android.BuildConfig
 import com.dicyvpn.android.DicyVPN
+import kotlinx.android.parcel.Parcelize
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
@@ -68,7 +70,8 @@ interface API {
     fun getServersList(): Call<ServerList>
 
     class ServerList(val primary: Map<String, List<Server>>, val secondary: Map<String, List<Server>>) {
-        class Server(val id: String, val name: String, val type: String, val country: String, val city: String, val load: Double)
+        @Parcelize
+        class Server(val id: String, val name: String, val type: String, val country: String, val city: String, val load: Double) : Parcelable
     }
 
     companion object {
