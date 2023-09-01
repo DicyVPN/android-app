@@ -1,6 +1,9 @@
 package com.dicyvpn.android
 
+import android.net.VpnService
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -71,7 +74,9 @@ import com.dicyvpn.android.ui.theme.components.ButtonTheme
 import com.dicyvpn.android.ui.theme.components.Flag
 import com.dicyvpn.android.ui.theme.components.Server
 import com.dicyvpn.android.vpn.Status
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -160,8 +165,32 @@ fun Home(modifier: Modifier = Modifier) {
                                     .clip(Shapes.small), contentDescription = null
                             )
                         }
+                        val launcherActivity = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult(), onResult = {
+                            Log.i("DicyVPN/Home", "VPN permission granted, starting tunnel")
+                            scope.launch {
+                                withContext(Dispatchers.IO) {
+                                    DicyVPN.setTunnelUp("") // TODO: Use config
+                                }
+                            }
+                        })
                         Button(
-                            {},
+                            {
+                                scope.launch {
+                                    withContext(Dispatchers.IO) {
+                                        if (status == Status.CONNECTED) {
+                                            DicyVPN.setTunnelDown()
+                                        } else {
+                                            val intent = VpnService.prepare(DicyVPN.get())
+                                            if (intent != null) {
+                                                launcherActivity.launch(intent)
+                                            } else {
+                                                Log.i("DicyVPN/Home", "VPN permission already granted")
+                                                DicyVPN.setTunnelUp("") // TODO: Use config
+                                            }
+                                        }
+                                    }
+                                }
+                            },
                             ButtonTheme.DARK,
                             if (status == Status.CONNECTED || status == Status.DISCONNECTING) ButtonColor.RED else ButtonColor.GREEN,
                             ButtonSize.NORMAL,
