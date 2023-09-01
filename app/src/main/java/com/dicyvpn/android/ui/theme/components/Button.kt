@@ -60,8 +60,12 @@ fun Button(
     enabled: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val bgColor = if (theme == ButtonTheme.DARK) color.darkColor else color.lightColor
-    val contentColor = if (theme == ButtonTheme.DARK) color.darkTextColor else color.lightTextColor
+    var bgColor = if (theme == ButtonTheme.DARK) color.darkColor else color.lightColor
+    var contentColor = if (theme == ButtonTheme.DARK) color.darkTextColor else color.lightTextColor
+    if (!enabled) {
+        bgColor = bgColor.copy(alpha = 0.5f)
+        contentColor = contentColor.copy(alpha = 0.5f)
+    }
 
     val horizontalPadding = if (size == ButtonSize.NORMAL) 24.dp else 32.dp
     val verticalPadding = if (size == ButtonSize.NORMAL) 8.dp else 12.dp
@@ -74,7 +78,7 @@ fun Button(
         contentColor = contentColor,
         tonalElevation = 0.dp,
         shadowElevation = 8.dp,
-        enabled = enabled
+        enabled = enabled,
     ) {
         val density = LocalDensity.current
 
@@ -84,20 +88,22 @@ fun Button(
                     modifier
                         .drawWithCache {
                             onDrawWithContent {
-                                // draw a top inner shadow with the same shape as the button
-                                val innerHeight = 2.dp.toPx()
-                                drawRoundRect(
-                                    color = Color.White,
-                                    size = drawContext.size,
-                                    cornerRadius = CornerRadius(Shapes.medium.topStart.toPx(drawContext.size, density), Shapes.medium.topEnd.toPx(drawContext.size, density)),
-                                    alpha = 0.25f
-                                )
-                                drawRoundRect(
-                                    color = bgColor,
-                                    size = drawContext.size.copy(height = drawContext.size.height - innerHeight),
-                                    cornerRadius = CornerRadius(Shapes.medium.topStart.toPx(drawContext.size, density), Shapes.medium.topEnd.toPx(drawContext.size, density)),
-                                    topLeft = Offset(0f, innerHeight),
-                                )
+                                if (enabled) {
+                                    // draw a top inner shadow with the same shape as the button
+                                    val innerHeight = 2.dp.toPx()
+                                    drawRoundRect(
+                                        color = Color.White,
+                                        size = drawContext.size,
+                                        cornerRadius = CornerRadius(Shapes.medium.topStart.toPx(drawContext.size, density), Shapes.medium.topEnd.toPx(drawContext.size, density)),
+                                        alpha = 0.25f
+                                    )
+                                    drawRoundRect(
+                                        color = bgColor,
+                                        size = drawContext.size.copy(height = drawContext.size.height - innerHeight),
+                                        cornerRadius = CornerRadius(Shapes.medium.topStart.toPx(drawContext.size, density), Shapes.medium.topEnd.toPx(drawContext.size, density)),
+                                        topLeft = Offset(0f, innerHeight),
+                                    )
+                                }
                                 drawContent()
                             }
                         },

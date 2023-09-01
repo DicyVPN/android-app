@@ -51,6 +51,7 @@ class MainActivity : ComponentActivity() {
                         composable("startup") { Startup(navController) }
                         composable("login") { Login(navController) }
                         composable("home") { Home() }
+                        // TODO: add logout
                     }
                 }
             }

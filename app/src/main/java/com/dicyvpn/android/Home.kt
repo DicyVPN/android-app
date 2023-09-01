@@ -2,10 +2,17 @@ package com.dicyvpn.android
 
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -53,6 +60,7 @@ import com.dicyvpn.android.api.API
 import com.dicyvpn.android.ui.theme.BrightGreen
 import com.dicyvpn.android.ui.theme.Gray600
 import com.dicyvpn.android.ui.theme.Gray800
+import com.dicyvpn.android.ui.theme.Red300
 import com.dicyvpn.android.ui.theme.Shapes
 import com.dicyvpn.android.ui.theme.Typography
 import com.dicyvpn.android.ui.theme.components.Button
@@ -61,6 +69,7 @@ import com.dicyvpn.android.ui.theme.components.ButtonSize
 import com.dicyvpn.android.ui.theme.components.ButtonTheme
 import com.dicyvpn.android.ui.theme.components.Flag
 import com.dicyvpn.android.ui.theme.components.Server
+import com.dicyvpn.android.vpn.Status
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -72,6 +81,18 @@ fun Home(modifier: Modifier = Modifier) {
     var primaryServers by rememberSaveable { mutableStateOf<Map<String, List<API.ServerList.Server>>>(emptyMap()) }
     var secondaryServers by rememberSaveable { mutableStateOf<Map<String, List<API.ServerList.Server>>>(emptyMap()) }
     var expandedCountry by rememberSaveable { mutableStateOf<String?>(null) }
+
+//    val status = Status.CONNECTED
+    val status = Status.CONNECTING
+    val isVPNLoading = status == Status.CONNECTING || status == Status.DISCONNECTING
+    val connectButtonLabel = stringResource(
+        when (status) {
+            Status.CONNECTED -> R.string.label_disconnect
+            Status.CONNECTING -> R.string.label_connecting
+            Status.DISCONNECTING -> R.string.label_disconnecting
+            Status.NOT_RUNNING -> R.string.label_connect
+        }
+    )
 
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState()
@@ -88,20 +109,30 @@ fun Home(modifier: Modifier = Modifier) {
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Surface(
-                                color = BrightGreen,
-                                contentColor = Gray800,
-                                modifier = modifier.clip(CircleShape)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Check,
-                                    contentDescription = null,
-                                    modifier = modifier
-                                        .padding(2.dp)
-                                        .size(14.dp)
-                                )
+                            Box(contentAlignment = Alignment.Center) {
+                                val notLoadingColor = if (status == Status.CONNECTED) BrightGreen else Red300
+                                val loadingAlphaAnimated by rememberInfiniteTransition(label = "loadingAlphaInfinite")
+                                    .animateFloat(
+                                        initialValue = 1f, targetValue = 0.7f, animationSpec = infiniteRepeatable(
+                                            animation = tween(800, easing = FastOutSlowInEasing),
+                                            repeatMode = RepeatMode.Reverse
+                                        ), label = "loadingAlpha"
+                                    )
+                                Surface(
+                                    color = if (isVPNLoading) notLoadingColor.copy(alpha = loadingAlphaAnimated) else notLoadingColor,
+                                    contentColor = Gray800,
+                                    modifier = modifier.clip(CircleShape)
+                                ) {
+                                    Icon(
+                                        imageVector = if (status == Status.CONNECTED) Icons.Rounded.Check else Icons.Rounded.Close,
+                                        contentDescription = null,
+                                        modifier = modifier
+                                            .padding(2.dp)
+                                            .size(14.dp)
+                                    )
+                                }
                             }
-                            Text(style = Typography.bodyMedium, text = "Connesso")
+                            Text(style = Typography.bodyMedium, text = stringResource(if (status == Status.CONNECTED) R.string.connected else R.string.not_connected))
                         }
                         Surface(
                             modifier = modifier
@@ -121,16 +152,13 @@ fun Home(modifier: Modifier = Modifier) {
                         Button(
                             {},
                             ButtonTheme.DARK,
-                            ButtonColor.RED,
+                            if (status == Status.CONNECTED || status == Status.DISCONNECTING) ButtonColor.RED else ButtonColor.GREEN,
                             ButtonSize.NORMAL,
-                            modifier.fillMaxWidth()
+                            modifier.fillMaxWidth(),
+                            !isVPNLoading
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Close,
-                                    contentDescription = null
-                                )
-                                Text(stringResource(R.string.disconnect))
+                                Text(connectButtonLabel)
                             }
                         }
                     }
@@ -167,7 +195,8 @@ fun Home(modifier: Modifier = Modifier) {
                                             .padding(bottom = 8.dp)
                                             .clickable {
                                                 expandedCountry = if (expandedCountry == country) null else country
-                                            }, color = Color.Transparent) {
+                                            }, color = Color.Transparent
+                                    ) {
                                         Row(modifier = modifier.padding(16.dp, 8.dp)) {
                                             Row(verticalAlignment = Alignment.CenterVertically) {
                                                 Flag(country = country)
