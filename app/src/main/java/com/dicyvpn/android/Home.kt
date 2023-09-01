@@ -1,6 +1,5 @@
 package com.dicyvpn.android
 
-import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -40,29 +39,26 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.dicyvpn.android.api.API
 import com.dicyvpn.android.ui.theme.BrightGreen
-import com.dicyvpn.android.ui.theme.Gray300
 import com.dicyvpn.android.ui.theme.Gray600
 import com.dicyvpn.android.ui.theme.Gray800
-import com.dicyvpn.android.ui.theme.Gray900
 import com.dicyvpn.android.ui.theme.Shapes
 import com.dicyvpn.android.ui.theme.Typography
 import com.dicyvpn.android.ui.theme.components.Button
 import com.dicyvpn.android.ui.theme.components.ButtonColor
 import com.dicyvpn.android.ui.theme.components.ButtonSize
 import com.dicyvpn.android.ui.theme.components.ButtonTheme
+import com.dicyvpn.android.ui.theme.components.Server
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-@SuppressLint("DiscouragedApi")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Home(modifier: Modifier = Modifier) {
@@ -135,36 +131,22 @@ fun Home(modifier: Modifier = Modifier) {
                 Column(
                     Modifier
                         .fillMaxWidth()
-                        .padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(stringResource(R.string.recommended_servers), modifier.padding(horizontal = 8.dp))
+                        .padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(R.string.recommended_servers), modifier.padding(12.dp, bottom = 4.dp))
                     primaryServers.forEach { (_, servers) ->
-                        servers.forEach { server ->
-                            Surface(color = Gray900, contentColor = Color.White, shape = Shapes.medium) {
-                                Row(modifier = modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Text(server.city)
-                                    Spacer(modifier = modifier.weight(1f))
-                                    Text(server.name, fontFamily = FontFamily.Monospace, color = Gray300)
-                                    val flagId = LocalContext.current.resources.getIdentifier(
-                                        "flag_${server.country.lowercase()}",
-                                        "drawable",
-                                        LocalContext.current.packageName
-                                    )
-                                    Image(
-                                        painterResource(id = flagId),
-                                        modifier = modifier
-                                            .width(24.dp)
-                                            .clip(Shapes.small),
-                                        contentDescription = null
-                                    )
-                                }
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            servers.forEach { server ->
+                                Server(modifier, server)
                             }
                         }
                     }
-                    Text(stringResource(R.string.other_servers), modifier.padding(horizontal = 8.dp))
+                    Text(stringResource(R.string.other_servers), modifier.padding(12.dp, 4.dp))
                     secondaryServers.forEach { (country, servers) ->
                         Text(country)
-                        servers.forEach { server ->
-                            Text(server.name)
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            servers.forEach { server ->
+                                Server(modifier, server)
+                            }
                         }
                     }
                     Spacer(Modifier.height(20.dp))
