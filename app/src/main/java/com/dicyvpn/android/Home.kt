@@ -1,7 +1,10 @@
 package com.dicyvpn.android
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,9 +22,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -36,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -53,8 +59,8 @@ import com.dicyvpn.android.ui.theme.components.Button
 import com.dicyvpn.android.ui.theme.components.ButtonColor
 import com.dicyvpn.android.ui.theme.components.ButtonSize
 import com.dicyvpn.android.ui.theme.components.ButtonTheme
+import com.dicyvpn.android.ui.theme.components.Flag
 import com.dicyvpn.android.ui.theme.components.Server
-import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -65,15 +71,16 @@ fun Home(modifier: Modifier = Modifier) {
     var loading by rememberSaveable { mutableStateOf(true) }
     var primaryServers by rememberSaveable { mutableStateOf<Map<String, List<API.ServerList.Server>>>(emptyMap()) }
     var secondaryServers by rememberSaveable { mutableStateOf<Map<String, List<API.ServerList.Server>>>(emptyMap()) }
+    var expandedCountry by rememberSaveable { mutableStateOf<String?>(null) }
 
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState()
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
-        sheetPeekHeight = 320.dp,
+        sheetPeekHeight = 288.dp,
         sheetShadowElevation = 8.dp,
         sheetContent = {
-            Column(modifier.verticalScroll(rememberScrollState())) {
+            Column(modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Surface(modifier.fillMaxWidth(), color = Gray800, shadowElevation = 4.dp) {
                     Column(modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         Row(
@@ -128,34 +135,70 @@ fun Home(modifier: Modifier = Modifier) {
                         }
                     }
                 }
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(stringResource(R.string.recommended_servers), modifier.padding(12.dp, bottom = 4.dp))
-                    primaryServers.forEach { (_, servers) ->
-                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            servers.forEach { server ->
-                                Server(modifier, server)
+                Surface(modifier.fillMaxWidth(), color = Gray800, shadowElevation = 4.dp) {
+                    if (loading) {
+                        Row(
+                            modifier
+                                .fillMaxWidth()
+                                .padding(top = 28.dp, bottom = 300.dp), horizontalArrangement = Arrangement.Center
+                        ) {
+                            LinearProgressIndicator()
+                        }
+                    } else {
+                        Column(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(stringResource(R.string.recommended_servers), modifier.padding(12.dp, bottom = 4.dp))
+                            primaryServers.forEach { (_, servers) ->
+                                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                    servers.forEach { server ->
+                                        Server(modifier, server)
+                                    }
+                                }
+                            }
+                            Text(stringResource(R.string.other_servers), modifier.padding(12.dp, 4.dp))
+                            secondaryServers.forEach { (country, servers) ->
+                                val rotation by animateFloatAsState(if (expandedCountry == country) 180f else 0f, label = "rotation")
+                                Column { // wrap in another column to prevent 8.dp spacing from being applied to the animated visibility
+                                    Surface(
+                                        modifier
+                                            .padding(bottom = 8.dp)
+                                            .clickable {
+                                                expandedCountry = if (expandedCountry == country) null else country
+                                            }, color = Color.Transparent) {
+                                        Row(modifier = modifier.padding(16.dp, 8.dp)) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Flag(country = country)
+                                                Text(country, modifier = modifier.padding(start = 8.dp), color = Color.White) // TODO: Use country name instead of code
+                                            }
+                                            Spacer(modifier = modifier.weight(1f))
+                                            Icon(
+                                                imageVector = Icons.Rounded.KeyboardArrowDown,
+                                                contentDescription = stringResource(if (expandedCountry == country) R.string.collapse else R.string.expand),
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = modifier
+                                                    .scale(1.2f)
+                                                    .rotate(rotation)
+                                            )
+                                        }
+                                    }
+                                    AnimatedVisibility(expandedCountry == country) {
+                                        Column(modifier.padding(bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                            servers.forEach { server ->
+                                                Server(modifier, server)
+                                            }
+                                        }
+                                    }
+                                    Surface(
+                                        modifier = modifier
+                                            .fillMaxWidth()
+                                            .height(1.dp), color = Gray600
+                                    ) {}
+                                }
                             }
                         }
-                    }
-                    Text(stringResource(R.string.other_servers), modifier.padding(12.dp, 4.dp))
-                    secondaryServers.forEach { (country, servers) ->
-                        Text(country)
-                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            servers.forEach { server ->
-                                Server(modifier, server)
-                            }
-                        }
-                    }
-                    Spacer(Modifier.height(20.dp))
-                    androidx.compose.material3.Button(
-                        onClick = {
-                            scope.launch { scaffoldState.bottomSheetState.partialExpand() }
-                        }
-                    ) {
-                        Text("Click to collapse sheet")
                     }
                 }
             }
@@ -165,8 +208,7 @@ fun Home(modifier: Modifier = Modifier) {
             Column(
                 modifier
                     .padding(top = 8.dp)
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)
+                    .fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Surface(
                     modifier

@@ -19,4 +19,6 @@
     <string name="disconnect">Disconnect</string>
     <string name="recommended_servers">Recommended Servers</string>
     <string name="other_servers">Other Servers</string>
+    <string name="collapse">Collapse</string>
+    <string name="expand">Expand</string>
 </resources>
