@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -23,12 +25,15 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
+
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             DicyVPNTheme {
                 val navController = rememberNavController()
+                val windowSizeClass = calculateWindowSizeClass(this)
 
                 LaunchedEffect(Unit) {
                     DicyVPN.getPreferencesDataStore().data.collect {
@@ -50,7 +55,7 @@ class MainActivity : ComponentActivity() {
                     NavHost(navController = navController, startDestination = "startup") {
                         composable("startup") { Startup(navController) }
                         composable("login") { Login(navController) }
-                        composable("home") { Home() }
+                        composable("home") { Home(windowSizeClass) }
                         // TODO: add logout
                     }
                 }

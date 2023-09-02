@@ -26,4 +26,5 @@
     <string name="label_connect">Connect</string>
     <string name="connected">Connected</string>
     <string name="not_connected">Disconnected</string>
+    <string name="menu_label">Menu</string>
 </resources>

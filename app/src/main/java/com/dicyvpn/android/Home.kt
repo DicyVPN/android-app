@@ -33,14 +33,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,18 +66,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.dicyvpn.android.api.API
-import com.dicyvpn.android.ui.theme.BrightGreen
-import com.dicyvpn.android.ui.theme.Gray600
-import com.dicyvpn.android.ui.theme.Gray800
-import com.dicyvpn.android.ui.theme.Red300
-import com.dicyvpn.android.ui.theme.Shapes
-import com.dicyvpn.android.ui.theme.Typography
 import com.dicyvpn.android.ui.components.Button
 import com.dicyvpn.android.ui.components.ButtonColor
 import com.dicyvpn.android.ui.components.ButtonSize
 import com.dicyvpn.android.ui.components.ButtonTheme
 import com.dicyvpn.android.ui.components.Flag
 import com.dicyvpn.android.ui.components.Server
+import com.dicyvpn.android.ui.theme.BrightGreen
+import com.dicyvpn.android.ui.theme.Gray600
+import com.dicyvpn.android.ui.theme.Gray800
+import com.dicyvpn.android.ui.theme.Red300
+import com.dicyvpn.android.ui.theme.Shapes
+import com.dicyvpn.android.ui.theme.Typography
 import com.dicyvpn.android.vpn.Status
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -83,7 +88,7 @@ import retrofit2.Response
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Home(modifier: Modifier = Modifier) {
+fun Home(windowSizeClass: WindowSizeClass, modifier: Modifier = Modifier) {
     var loading by rememberSaveable { mutableStateOf(true) }
     var primaryServers by rememberSaveable { mutableStateOf<Map<String, List<API.ServerList.Server>>>(emptyMap()) }
     var secondaryServers by rememberSaveable { mutableStateOf<Map<String, List<API.ServerList.Server>>>(emptyMap()) }
@@ -276,26 +281,28 @@ fun Home(modifier: Modifier = Modifier) {
         Surface(Modifier.padding(innerPadding), color = MaterialTheme.colorScheme.background) {
             Column(
                 modifier
-                    .padding(top = 8.dp)
-                    .fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Surface(
-                    modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp),
-                    color = Gray600,
-                    contentColor = Color.White,
-                    shape = Shapes.medium,
-                    shadowElevation = 8.dp
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.full_logo),
-                        contentDescription = stringResource(R.string.dicyvpn_logo),
-                        modifier = Modifier
-                            .padding(16.dp, 10.dp)
-                            .heightIn(max = 40.dp)
-                    )
-                }
+                    .fillMaxSize()
+                    .padding(bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                CenterAlignedTopAppBar(
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Gray600),
+                    title = {
+                        Image(
+                            painter = painterResource(id = R.drawable.full_logo),
+                            contentDescription = stringResource(R.string.dicyvpn_logo),
+                            modifier = Modifier
+                                .padding(16.dp, 10.dp)
+                                .heightIn(max = 40.dp)
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { /* doSomething() */ }) {
+                            Icon(
+                                imageVector = Icons.Rounded.Menu,
+                                contentDescription = stringResource(R.string.menu_label),
+                            )
+                        }
+                    }
+                )
                 Surface(
                     modifier
                         .fillMaxWidth()

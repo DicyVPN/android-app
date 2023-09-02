@@ -12,7 +12,7 @@ android {
         applicationId = "com.dicyvpn.android"
         minSdk = 24
         targetSdk = 34
-        versionCode = 6
+        versionCode = 7
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -67,6 +67,9 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.0.0")
     implementation("androidx.navigation:navigation-compose:2.7.1")
     implementation("androidx.compose.material:material-icons-extended:1.5.0")
+    implementation("androidx.window:window:1.1.0")
+    implementation("androidx.window:window-core:1.1.0")
+    implementation("androidx.compose.material3:material3-window-size-class:1.1.1")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
