@@ -1,4 +1,4 @@
-package com.dicyvpn.android.ui.theme.components
+package com.dicyvpn.android.ui.components
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image

@@ -59,10 +59,10 @@ import com.dicyvpn.android.ui.theme.Gray200
 import com.dicyvpn.android.ui.theme.Gray400
 import com.dicyvpn.android.ui.theme.Gray600
 import com.dicyvpn.android.ui.theme.Shapes
-import com.dicyvpn.android.ui.theme.components.Button
-import com.dicyvpn.android.ui.theme.components.ButtonColor
-import com.dicyvpn.android.ui.theme.components.ButtonSize
-import com.dicyvpn.android.ui.theme.components.ButtonTheme
+import com.dicyvpn.android.ui.components.Button
+import com.dicyvpn.android.ui.components.ButtonColor
+import com.dicyvpn.android.ui.components.ButtonSize
+import com.dicyvpn.android.ui.components.ButtonTheme
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback

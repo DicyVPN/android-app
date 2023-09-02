@@ -1,4 +1,4 @@
-package com.dicyvpn.android.ui.theme
+package com.dicyvpn.android.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState

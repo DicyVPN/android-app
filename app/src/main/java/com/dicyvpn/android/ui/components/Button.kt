@@ -1,4 +1,4 @@
-package com.dicyvpn.android.ui.theme.components
+package com.dicyvpn.android.ui.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
