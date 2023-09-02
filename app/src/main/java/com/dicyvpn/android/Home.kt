@@ -119,7 +119,7 @@ fun Home(windowSizeClass: WindowSizeClass, modifier: Modifier = Modifier) {
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
-        sheetPeekHeight = 288.dp,
+        sheetPeekHeight = 300.dp,
         sheetShadowElevation = 8.dp,
         sheetContent = {
             Column(modifier.verticalScroll(scrollState), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -213,7 +213,7 @@ fun Home(windowSizeClass: WindowSizeClass, modifier: Modifier = Modifier) {
                         Row(
                             modifier
                                 .fillMaxWidth()
-                                .padding(top = 28.dp, bottom = 300.dp), horizontalArrangement = Arrangement.Center
+                                .padding(top = 38.dp, bottom = 300.dp), horizontalArrangement = Arrangement.Center
                         ) {
                             LinearProgressIndicator()
                         }
