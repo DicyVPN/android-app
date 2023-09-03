@@ -121,6 +121,28 @@ fun Home(windowSizeClass: WindowSizeClass, modifier: Modifier = Modifier) {
         scaffoldState = scaffoldState,
         sheetPeekHeight = 300.dp,
         sheetShadowElevation = 8.dp,
+        topBar = {
+            CenterAlignedTopAppBar(
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Gray600),
+                title = {
+                    Image(
+                        painter = painterResource(id = R.drawable.full_logo),
+                        contentDescription = stringResource(R.string.dicyvpn_logo),
+                        modifier = Modifier
+                            .padding(16.dp, 10.dp)
+                            .heightIn(max = 40.dp)
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { /* doSomething() */ }) {
+                        Icon(
+                            imageVector = Icons.Rounded.Menu,
+                            contentDescription = stringResource(R.string.menu_label),
+                        )
+                    }
+                }
+            )
+        },
         sheetContent = {
             Column(modifier.verticalScroll(scrollState), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Surface(modifier.fillMaxWidth(), color = Gray800, shadowElevation = 4.dp) {
@@ -279,44 +301,19 @@ fun Home(windowSizeClass: WindowSizeClass, modifier: Modifier = Modifier) {
         }
     ) { innerPadding ->
         Surface(Modifier.padding(innerPadding), color = MaterialTheme.colorScheme.background) {
-            Column(
+            Surface(
                 modifier
                     .fillMaxSize()
-                    .padding(bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                CenterAlignedTopAppBar(
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Gray600),
-                    title = {
-                        Image(
-                            painter = painterResource(id = R.drawable.full_logo),
-                            contentDescription = stringResource(R.string.dicyvpn_logo),
-                            modifier = Modifier
-                                .padding(16.dp, 10.dp)
-                                .heightIn(max = 40.dp)
-                        )
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = { /* doSomething() */ }) {
-                            Icon(
-                                imageVector = Icons.Rounded.Menu,
-                                contentDescription = stringResource(R.string.menu_label),
-                            )
-                        }
-                    }
-                )
-                Surface(
-                    modifier
+                    .padding(vertical = 8.dp), color = Gray800
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.world_map),
+                    contentDescription = stringResource(R.string.world_map),
+                    contentScale = ContentScale.Crop,
+                    modifier = modifier
                         .fillMaxWidth()
-                        .weight(1f), color = Gray800
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.world_map),
-                        contentDescription = stringResource(R.string.world_map),
-                        contentScale = ContentScale.Crop,
-                        modifier = modifier
-                            .fillMaxWidth()
-                            .scale(1.5f)
-                    )
-                }
+                        .scale(1.5f)
+                )
             }
         }
     }
