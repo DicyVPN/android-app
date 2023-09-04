@@ -28,4 +28,5 @@
     <string name="not_connected">Disconnected</string>
     <string name="menu_label">Menu</string>
     <string name="navigation_home">Home</string>
+    <string name="navigation_logout">Logout</string>
 </resources>

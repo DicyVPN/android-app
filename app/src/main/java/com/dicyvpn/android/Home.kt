@@ -13,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -56,14 +57,13 @@ fun Home(navController: NavHostController, windowSizeClass: WindowSizeClass, mod
     var loading by rememberSaveable { mutableStateOf(true) }
     var primaryServers by rememberSaveable { mutableStateOf<Map<String, List<API.ServerList.Server>>>(emptyMap()) }
     var secondaryServers by rememberSaveable { mutableStateOf<Map<String, List<API.ServerList.Server>>>(emptyMap()) }
-
+    val onServerClick = {
+    }
     val status by remember { DicyVPN.getStatus() }
 
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState()
     val scrollState = rememberScrollState()
-    val onServerClick = {
-    }
 
     if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact) {
         BottomSheetScaffold(
@@ -123,6 +123,14 @@ fun Home(navController: NavHostController, windowSizeClass: WindowSizeClass, mod
                     selected = true,
                     onClick = {}
                 )
+                NavigationRailItem(
+                    icon = { Icon(Icons.Rounded.Logout, contentDescription = stringResource(R.string.navigation_logout)) },
+                    label = { Text(stringResource(R.string.navigation_logout)) },
+                    selected = false,
+                    onClick = {
+                        navController.navigate("logout")
+                    }
+                )
             }
             Column(modifier.weight(0.4f)) {
                 WorldMap(verticalSpacing = false, modifier.fillMaxHeight())
@@ -133,12 +141,7 @@ fun Home(navController: NavHostController, windowSizeClass: WindowSizeClass, mod
                     .verticalScroll(scrollState),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                StatusCard(status, onButtonFocus = {
-                    Log.i("DicyVPN/Home", "Connect button focused, scrolling to top") // easier to view the status on a TV
-                    scope.launch {
-                        scrollState.animateScrollTop(MutatePriority.PreventUserInput)
-                    }
-                })
+                StatusCard(status)
                 ServerSelector(
                     loading,
                     primaryServers,

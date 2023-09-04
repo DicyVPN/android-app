@@ -2,7 +2,6 @@ package com.dicyvpn.android.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,12 +26,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.dicyvpn.android.R
 import com.dicyvpn.android.api.API
+import com.dicyvpn.android.ui.dpadFocusable
 import com.dicyvpn.android.ui.theme.DicyVPNTheme
 import com.dicyvpn.android.ui.theme.Gray600
 import com.dicyvpn.android.ui.theme.Gray800
@@ -47,6 +49,8 @@ fun ServerSelector(
     fillLoadingHeight: Boolean = false
 ) {
     var expandedCountry by rememberSaveable { mutableStateOf<String?>(null) }
+    val scrollPaddingVertical = LocalDensity.current.run { 48.dp.toPx() }
+    val scrollPadding = Rect(0f, scrollPaddingVertical, 0f, scrollPaddingVertical)
 
     Surface(modifier.fillMaxWidth(), color = Gray800, shadowElevation = 4.dp) {
         if (loading) {
@@ -73,7 +77,7 @@ fun ServerSelector(
                 primaryServers.forEach { (_, servers) ->
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         servers.forEach { server ->
-                            Server(modifier.clickable { onServerClick() }, server)
+                            Server(modifier.dpadFocusable(onClick = onServerClick, scrollPadding = scrollPadding), server)
                         }
                     }
                 }
@@ -84,9 +88,9 @@ fun ServerSelector(
                         Surface(
                             modifier
                                 .padding(bottom = 8.dp)
-                                .clickable {
+                                .dpadFocusable(onClick = {
                                     expandedCountry = if (expandedCountry == country) null else country
-                                }, color = Color.Transparent
+                                }, scrollPadding = scrollPadding), color = Color.Transparent
                         ) {
                             Row(modifier = modifier.padding(16.dp, 8.dp)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -107,7 +111,7 @@ fun ServerSelector(
                         AnimatedVisibility(expandedCountry == country) {
                             Column(modifier.padding(bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                 servers.forEach { server ->
-                                    Server(modifier.clickable { onServerClick() }, server)
+                                    Server(modifier.dpadFocusable(onClick = onServerClick, scrollPadding = scrollPadding), server)
                                 }
                             }
                         }

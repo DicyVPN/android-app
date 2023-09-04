@@ -53,8 +53,8 @@ class MainActivity : ComponentActivity() {
                     NavHost(navController = navController, startDestination = "startup") {
                         composable("startup") { Startup(navController) }
                         composable("login") { Login(navController) }
+                        composable("logout") { Logout(navController) }
                         composable("home") { Home(navController, windowSizeClass) }
-                        // TODO: add logout
                     }
                 }
             }

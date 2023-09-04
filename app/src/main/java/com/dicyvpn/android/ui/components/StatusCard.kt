@@ -34,6 +34,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -53,7 +55,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-fun StatusCard(status: Status, modifier: Modifier = Modifier, onButtonFocus: () -> Unit = {}) {
+fun StatusCard(status: Status, modifier: Modifier = Modifier) {
     val scope = rememberCoroutineScope()
 
     val isVPNLoading = status == Status.CONNECTING || status == Status.DISCONNECTING
@@ -148,8 +150,8 @@ fun StatusCard(status: Status, modifier: Modifier = Modifier, onButtonFocus: () 
                 ButtonSize.NORMAL,
                 modifier = modifier.fillMaxWidth(),
                 enabled = !isVPNLoading,
-                onFocused = onButtonFocus,
-                focus = true
+                focus = true,
+                scrollPadding = Rect(0f, LocalDensity.current.run { 120.dp.toPx() }, 0f, 0f)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(connectButtonLabel)
