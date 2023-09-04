@@ -29,4 +29,8 @@
     <string name="menu_label">Menu</string>
     <string name="navigation_home">Home</string>
     <string name="navigation_logout">Logout</string>
+    <string name="logout_label_sign_out">Sign out</string>
+    <string name="logout_label_go_back">Go back</string>
+    <string name="logout__message">Are you sure you want to sign out of DicyVPN?</string>
+    <string name="logout_title">Sign out of DicyVPN</string>
 </resources>

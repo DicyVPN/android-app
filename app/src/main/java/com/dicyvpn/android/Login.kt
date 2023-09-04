@@ -71,6 +71,7 @@ import retrofit2.Response
 
 @Composable
 fun Login(navController: NavHostController, modifier: Modifier = Modifier) {
+    var loading by rememberSaveable { mutableStateOf(false) }
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
@@ -81,7 +82,9 @@ fun Login(navController: NavHostController, modifier: Modifier = Modifier) {
 
     val context = LocalContext.current
     val loginAction = {
+        loading = true
         login(context, email, password, navController) { message, link, linkText ->
+            loading = false
             dialogMessage = message
             dialogLink = link ?: ""
             dialogLinkText = linkText ?: ""
@@ -168,7 +171,8 @@ fun Login(navController: NavHostController, modifier: Modifier = Modifier) {
                         size = ButtonSize.BIG,
                         modifier = modifier.defaultMinSize(
                             minWidth = TextFieldDefaults.MinWidth
-                        )
+                        ),
+                        enabled = !loading
                     ) {
                         Text(stringResource(R.string.login))
                     }

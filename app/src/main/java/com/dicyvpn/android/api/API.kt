@@ -7,10 +7,10 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.dicyvpn.android.BuildConfig
 import com.dicyvpn.android.DicyVPN
-import kotlinx.parcelize.Parcelize
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
+import kotlinx.parcelize.Parcelize
 import okhttp3.Headers
 import okhttp3.OkHttpClient
 import org.json.JSONObject
@@ -68,6 +68,9 @@ interface PublicAPI {
 interface API {
     @GET("servers/list")
     fun getServersList(): Call<ServerList>
+
+    @GET("logout")
+    fun logout(): Call<Unit>
 
     class ServerList(val primary: Map<String, List<Server>>, val secondary: Map<String, List<Server>>) {
         @Parcelize
