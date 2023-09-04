@@ -1,11 +1,11 @@
 package com.dicyvpn.android.ui.components
 
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
@@ -13,9 +13,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -49,7 +54,6 @@ enum class ButtonSize {
     BIG
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Button(
     onClick: () -> Unit,
@@ -58,6 +62,8 @@ fun Button(
     size: ButtonSize,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    onFocused: () -> Unit = {},
+    focus: Boolean = false,
     content: @Composable () -> Unit
 ) {
     var bgColor = if (theme == ButtonTheme.DARK) color.darkColor else color.lightColor
@@ -70,15 +76,21 @@ fun Button(
     val horizontalPadding = if (size == ButtonSize.NORMAL) 24.dp else 32.dp
     val verticalPadding = if (size == ButtonSize.NORMAL) 8.dp else 12.dp
 
+    val focusRequester = remember { FocusRequester() }
+
     Surface(
         onClick = onClick,
-        modifier = modifier,
+        modifier = modifier.focusRequester(focusRequester).onFocusChanged {
+            if (it.isFocused) {
+                onFocused()
+            }
+        }.focusable(enabled),
         shape = Shapes.medium,
         color = bgColor,
         contentColor = contentColor,
         tonalElevation = 0.dp,
         shadowElevation = 8.dp,
-        enabled = enabled,
+        enabled = enabled
     ) {
         val density = LocalDensity.current
 
@@ -128,6 +140,10 @@ fun Button(
                 }
             }
         }
+    }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
     }
 }
 

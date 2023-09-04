@@ -2,28 +2,30 @@ package com.dicyvpn.android
 
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -33,17 +35,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.dicyvpn.android.api.API
+import com.dicyvpn.android.ui.animateScrollTop
 import com.dicyvpn.android.ui.components.ServerSelector
 import com.dicyvpn.android.ui.components.StatusCard
+import com.dicyvpn.android.ui.components.WorldMap
 import com.dicyvpn.android.ui.theme.Gray600
-import com.dicyvpn.android.ui.theme.Gray800
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
@@ -61,86 +62,89 @@ fun Home(navController: NavHostController, windowSizeClass: WindowSizeClass, mod
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState()
     val scrollState = rememberScrollState()
-    val onServerClick: () -> Unit = {
-        scope.launch {
-            scrollState.animateScrollTo(0)
-        }
-        scope.launch {
-            scaffoldState.bottomSheetState.partialExpand()
-        }
+    val onServerClick = {
     }
 
-    //NavigationRail {
-    //    NavigationRailItem(
-    //        icon = { Icon(Icons.Rounded.Home, contentDescription = stringResource(R.string.navigation_home)) },
-    //        label = { Text(stringResource(R.string.navigation_home)) },
-    //        selected = true,
-    //        onClick = {}
-    //    )
-    //}
-    BottomSheetScaffold(
-        scaffoldState = scaffoldState,
-        sheetPeekHeight = 300.dp,
-        sheetShadowElevation = 8.dp,
-        topBar = {
-            CenterAlignedTopAppBar(
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Gray600),
-                title = {
-                    Image(
-                        painter = painterResource(id = R.drawable.full_logo),
-                        contentDescription = stringResource(R.string.dicyvpn_logo),
-                        modifier = Modifier
-                            .padding(16.dp, 10.dp)
-                            .heightIn(max = 40.dp)
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { /* doSomething() */ }) {
-                        Icon(
-                            imageVector = Icons.Rounded.Menu,
-                            contentDescription = stringResource(R.string.menu_label),
+    if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact) {
+        BottomSheetScaffold(
+            scaffoldState = scaffoldState,
+            sheetPeekHeight = 300.dp,
+            sheetShadowElevation = 8.dp,
+            topBar = {
+                CenterAlignedTopAppBar(
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Gray600),
+                    title = {
+                        Image(
+                            painter = painterResource(id = R.drawable.full_logo),
+                            contentDescription = stringResource(R.string.dicyvpn_logo),
+                            modifier = Modifier
+                                .padding(16.dp, 10.dp)
+                                .heightIn(max = 40.dp)
                         )
-                    }
-                }
-            )
-        },
-        sheetContent = {
-            Column(modifier.verticalScroll(scrollState), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                StatusCard(status)
-                Surface(modifier.fillMaxWidth(), color = Gray800, shadowElevation = 4.dp) {
-                    if (loading) {
-                        Row(
-                            modifier
-                                .fillMaxWidth()
-                                .padding(top = 38.dp, bottom = 300.dp), horizontalArrangement = Arrangement.Center
-                        ) {
-                            LinearProgressIndicator()
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { /* doSomething() */ }) {
+                            Icon(
+                                imageVector = Icons.Rounded.Menu,
+                                contentDescription = stringResource(R.string.menu_label),
+                            )
                         }
-                    } else {
-                        ServerSelector(
-                            primaryServers,
-                            secondaryServers,
-                            onServerClick
-                        )
                     }
-                    // TODO: if loading = false and primaryServers and secondaryServers are empty, show retry button
+                )
+            },
+            sheetContent = {
+                Column(modifier.verticalScroll(scrollState), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    StatusCard(status)
+                    ServerSelector(
+                        loading,
+                        primaryServers,
+                        secondaryServers,
+                        onServerClick = {
+                            scope.launch {
+                                scrollState.animateScrollTop(MutatePriority.PreventUserInput)
+                            }
+                            scope.launch {
+                                scaffoldState.bottomSheetState.partialExpand()
+                            }
+                            onServerClick()
+                        }
+                    )
                 }
             }
+        ) { innerPadding ->
+            WorldMap(verticalSpacing = true, modifier.padding(innerPadding))
         }
-    ) { innerPadding ->
-        Surface(Modifier.padding(innerPadding), color = MaterialTheme.colorScheme.background) {
-            Surface(
+    } else {
+        Row {
+            NavigationRail {
+                NavigationRailItem(
+                    icon = { Icon(Icons.Rounded.Home, contentDescription = stringResource(R.string.navigation_home)) },
+                    label = { Text(stringResource(R.string.navigation_home)) },
+                    selected = true,
+                    onClick = {}
+                )
+            }
+            Column(modifier.weight(0.4f)) {
+                WorldMap(verticalSpacing = false, modifier.fillMaxHeight())
+            }
+            Column(
                 modifier
-                    .fillMaxSize()
-                    .padding(vertical = 8.dp), color = Gray800
+                    .weight(0.6f)
+                    .verticalScroll(scrollState),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.world_map),
-                    contentDescription = stringResource(R.string.world_map),
-                    contentScale = ContentScale.Crop,
-                    modifier = modifier
-                        .fillMaxWidth()
-                        .scale(1.5f)
+                StatusCard(status, onButtonFocus = {
+                    Log.i("DicyVPN/Home", "Connect button focused, scrolling to top") // easier to view the status on a TV
+                    scope.launch {
+                        scrollState.animateScrollTop(MutatePriority.PreventUserInput)
+                    }
+                })
+                ServerSelector(
+                    loading,
+                    primaryServers,
+                    secondaryServers,
+                    onServerClick,
+                    fillLoadingHeight = true
                 )
             }
         }

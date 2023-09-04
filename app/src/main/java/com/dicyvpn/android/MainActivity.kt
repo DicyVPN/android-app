@@ -1,7 +1,6 @@
 package com.dicyvpn.android
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,7 +36,6 @@ class MainActivity : ComponentActivity() {
 
                 LaunchedEffect(Unit) {
                     DicyVPN.getPreferencesDataStore().data.collect {
-                        Log.i("DicyVPN/MainActivity", "data.collect - " + it[stringPreferencesKey("auth.refreshToken")])
                         if (it[stringPreferencesKey("auth.refreshToken")].isNullOrEmpty()) {
                             navController.navigate("login") {
                                 popUpTo(0)

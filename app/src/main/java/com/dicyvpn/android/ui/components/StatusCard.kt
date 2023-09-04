@@ -53,8 +53,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-fun StatusCard(status: Status, modifier: Modifier = Modifier) {
+fun StatusCard(status: Status, modifier: Modifier = Modifier, onButtonFocus: () -> Unit = {}) {
     val scope = rememberCoroutineScope()
+
     val isVPNLoading = status == Status.CONNECTING || status == Status.DISCONNECTING
     val connectButtonLabel = stringResource(
         when (status) {
@@ -113,11 +114,15 @@ fun StatusCard(status: Status, modifier: Modifier = Modifier) {
                 )
             }
             val launcherActivity = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult(), onResult = {
-                Log.i("DicyVPN/Home", "VPN permission granted, starting tunnel")
-                scope.launch {
-                    withContext(Dispatchers.IO) {
-                        DicyVPN.setTunnelUp("") // TODO: Use config
+                if (it.resultCode != 0) {
+                    Log.i("DicyVPN/Home", "VPN permission granted, starting tunnel, resultCode: ${it.resultCode}")
+                    scope.launch {
+                        withContext(Dispatchers.IO) {
+                            DicyVPN.setTunnelUp("") // TODO: Use config
+                        }
                     }
+                } else {
+                    Log.i("DicyVPN/Home", "VPN permission denied")
                 }
             })
             Button(
@@ -141,8 +146,10 @@ fun StatusCard(status: Status, modifier: Modifier = Modifier) {
                 ButtonTheme.DARK,
                 if (status == Status.CONNECTED || status == Status.DISCONNECTING) ButtonColor.RED else ButtonColor.GREEN,
                 ButtonSize.NORMAL,
-                modifier.fillMaxWidth(),
-                !isVPNLoading
+                modifier = modifier.fillMaxWidth(),
+                enabled = !isVPNLoading,
+                onFocused = onButtonFocus,
+                focus = true
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(connectButtonLabel)

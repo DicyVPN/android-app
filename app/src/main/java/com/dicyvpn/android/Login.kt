@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -54,15 +55,15 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.dicyvpn.android.api.API
 import com.dicyvpn.android.api.PublicAPI
+import com.dicyvpn.android.ui.components.Button
+import com.dicyvpn.android.ui.components.ButtonColor
+import com.dicyvpn.android.ui.components.ButtonSize
+import com.dicyvpn.android.ui.components.ButtonTheme
 import com.dicyvpn.android.ui.theme.DicyVPNTheme
 import com.dicyvpn.android.ui.theme.Gray200
 import com.dicyvpn.android.ui.theme.Gray400
 import com.dicyvpn.android.ui.theme.Gray600
 import com.dicyvpn.android.ui.theme.Shapes
-import com.dicyvpn.android.ui.components.Button
-import com.dicyvpn.android.ui.components.ButtonColor
-import com.dicyvpn.android.ui.components.ButtonSize
-import com.dicyvpn.android.ui.components.ButtonTheme
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
@@ -77,6 +78,16 @@ fun Login(navController: NavHostController, modifier: Modifier = Modifier) {
     var dialogMessage by rememberSaveable { mutableStateOf("") }
     var dialogLink by rememberSaveable { mutableStateOf("") }
     var dialogLinkText by rememberSaveable { mutableStateOf("") }
+
+    val context = LocalContext.current
+    val loginAction = {
+        login(context, email, password, navController) { message, link, linkText ->
+            dialogMessage = message
+            dialogLink = link ?: ""
+            dialogLinkText = linkText ?: ""
+            openDialog = true
+        }
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         Image(
@@ -138,6 +149,9 @@ fun Login(navController: NavHostController, modifier: Modifier = Modifier) {
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         shape = Shapes.medium, // TODO: add password visibility toggle
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        keyboardActions = KeyboardActions(
+                            onDone = { loginAction() }
+                        ),
                         trailingIcon = {
                             IconButton(onClick = { passwordVisible = !passwordVisible }) {
                                 Icon(
@@ -147,16 +161,8 @@ fun Login(navController: NavHostController, modifier: Modifier = Modifier) {
                             }
                         }
                     )
-                    val context = LocalContext.current
                     Button(
-                        onClick = {
-                            login(context, email, password, navController) { message, link, linkText ->
-                                dialogMessage = message
-                                dialogLink = link ?: ""
-                                dialogLinkText = linkText ?: ""
-                                openDialog = true
-                            }
-                        },
+                        onClick = loginAction,
                         theme = ButtonTheme.DARK,
                         color = ButtonColor.BLUE,
                         size = ButtonSize.BIG,
