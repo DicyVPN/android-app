@@ -265,8 +265,10 @@ fun MainColumn(
             primaryServers,
             secondaryServers,
             onServerClick = { server ->
-                scope.launch {
-                    scrollState.animateScrollTop(MutatePriority.PreventUserInput)
+                if (server.type != API.ServerList.Type.SECONDARY || agreedToUseSecondaryServers) {
+                    scope.launch {
+                        scrollState.animateScrollTop(MutatePriority.PreventUserInput)
+                    }
                 }
                 onServerClick(server, agreedToUseSecondaryServers, showSecondaryServersAgreement)
             },
