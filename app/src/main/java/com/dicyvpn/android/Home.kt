@@ -67,6 +67,24 @@ fun Home(navController: NavHostController, windowSizeClass: WindowSizeClass, mod
     var secondaryServers by rememberSaveable { mutableStateOf<Map<String, List<API.ServerList.Server>>>(emptyMap()) }
     val onServerClick = {
     }
+    val fetchServers = {
+        loading = true
+        API.get().getServersList().enqueue(object : Callback<API.ServerList> {
+            override fun onResponse(call: Call<API.ServerList>, response: Response<API.ServerList>) {
+                loading = false
+                if (response.isSuccessful) {
+                    val servers = response.body()!!
+                    primaryServers = servers.primary
+                    secondaryServers = servers.secondary
+                }
+            }
+
+            override fun onFailure(call: Call<API.ServerList>, t: Throwable) {
+                Log.e("DicyVPN/API", "Failed to get servers list", t)
+                loading = false
+            }
+        })
+    }
     val status by remember { DicyVPN.getStatus() }
 
     val navigationItems = listOf(
@@ -153,7 +171,8 @@ fun Home(navController: NavHostController, windowSizeClass: WindowSizeClass, mod
                                     scaffoldState.bottomSheetState.partialExpand()
                                 }
                                 onServerClick()
-                            }
+                            },
+                            retry = fetchServers
                         )
                     }
                 }
@@ -193,6 +212,7 @@ fun Home(navController: NavHostController, windowSizeClass: WindowSizeClass, mod
                         }
                         onServerClick()
                     },
+                    retry = fetchServers,
                     fillLoadingHeight = true
                 )
             }
@@ -201,21 +221,7 @@ fun Home(navController: NavHostController, windowSizeClass: WindowSizeClass, mod
 
     if (loading) {
         LaunchedEffect(Unit) {
-            API.get().getServersList().enqueue(object : Callback<API.ServerList> {
-                override fun onResponse(call: Call<API.ServerList>, response: Response<API.ServerList>) {
-                    loading = false
-                    if (response.isSuccessful) {
-                        val servers = response.body()!!
-                        primaryServers = servers.primary
-                        secondaryServers = servers.secondary
-                    }
-                }
-
-                override fun onFailure(call: Call<API.ServerList>, t: Throwable) {
-                    Log.e("DicyVPN/API", "Failed to get servers list", t)
-                    loading = false
-                }
-            })
+            fetchServers()
         }
     }
 }

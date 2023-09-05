@@ -38,6 +38,8 @@ import com.dicyvpn.android.ui.dpadFocusable
 import com.dicyvpn.android.ui.theme.DicyVPNTheme
 import com.dicyvpn.android.ui.theme.Gray600
 import com.dicyvpn.android.ui.theme.Gray800
+import com.dicyvpn.android.ui.theme.Red300
+import com.dicyvpn.android.ui.theme.Typography
 import java.util.Locale
 
 @Composable
@@ -46,6 +48,7 @@ fun ServerSelector(
     primaryServers: Map<String, List<API.ServerList.Server>>,
     secondaryServers: Map<String, List<API.ServerList.Server>>,
     onServerClick: () -> Unit,
+    retry: () -> Unit,
     modifier: Modifier = Modifier,
     fillLoadingHeight: Boolean = false
 ) {
@@ -66,6 +69,13 @@ fun ServerSelector(
                         .padding(top = 38.dp, bottom = 300.dp), horizontalArrangement = Arrangement.Center
                 ) {
                     LinearProgressIndicator()
+                }
+            }
+        } else if (primaryServers.isEmpty() && secondaryServers.isEmpty()) {
+            Column(modifier.padding(vertical = 64.dp, horizontal = 32.dp), verticalArrangement = Arrangement.spacedBy(18.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(stringResource(R.string.cannot_load_servers), color = Red300, style = Typography.bodyLarge)
+                Button(retry, ButtonTheme.DARK, ButtonColor.BLUE, ButtonSize.BIG, modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.cannot_load_servers_try_again))
                 }
             }
         } else {
@@ -125,7 +135,6 @@ fun ServerSelector(
                 }
             }
         }
-        // TODO: if loading = false and primaryServers and secondaryServers are empty, show retry button
     }
 }
 
@@ -146,6 +155,6 @@ fun ServerSelectorPreview() {
     )
 
     DicyVPNTheme {
-        ServerSelector(false, servers, servers, {})
+        ServerSelector(false, servers, servers, {}, {})
     }
 }

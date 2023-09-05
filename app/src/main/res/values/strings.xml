@@ -33,4 +33,6 @@
     <string name="logout_label_go_back">Go back</string>
     <string name="logout__message">Are you sure you want to sign out of DicyVPN?</string>
     <string name="logout_title">Sign out of DicyVPN</string>
+    <string name="cannot_load_servers">Couldn\'t load DicyVPN servers</string>
+    <string name="cannot_load_servers_try_again">Try again</string>
 </resources>
