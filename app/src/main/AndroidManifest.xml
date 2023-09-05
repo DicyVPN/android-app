@@ -14,7 +14,7 @@
 
     <application
         android:name=".DicyVPN"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:banner="@mipmap/ic_banner"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:enableOnBackInvokedCallback="true"
