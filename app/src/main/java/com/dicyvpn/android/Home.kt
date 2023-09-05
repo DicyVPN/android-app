@@ -187,7 +187,12 @@ fun Home(navController: NavHostController, windowSizeClass: WindowSizeClass, mod
                     loading,
                     primaryServers,
                     secondaryServers,
-                    onServerClick,
+                    onServerClick = {
+                        scope.launch {
+                            scrollState.animateScrollTop(MutatePriority.PreventUserInput)
+                        }
+                        onServerClick()
+                    },
                     fillLoadingHeight = true
                 )
             }
