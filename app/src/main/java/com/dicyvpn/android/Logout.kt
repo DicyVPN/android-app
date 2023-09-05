@@ -48,7 +48,7 @@ fun Logout(navController: NavHostController, modifier: Modifier = Modifier) {
 
     Surface(modifier, color = Gray800, contentColor = Color.White) {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically), horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
-            Text(text = stringResource(R.string.logout_title), style = Typography.titleLarge)
+            Text(text = stringResource(R.string.logout_title), style = Typography.headlineSmall)
             Text(text = stringResource(R.string.logout__message))
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 16.dp)) {
                 Button({ navController.popBackStack() }, ButtonTheme.DARK, ButtonColor.TRANSPARENT, ButtonSize.NORMAL) {
