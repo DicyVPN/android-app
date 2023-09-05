@@ -47,7 +47,7 @@ fun ServerSelector(
     loading: Boolean,
     primaryServers: Map<String, List<API.ServerList.Server>>,
     secondaryServers: Map<String, List<API.ServerList.Server>>,
-    onServerClick: () -> Unit,
+    onServerClick: (API.ServerList.Server) -> Unit,
     retry: () -> Unit,
     modifier: Modifier = Modifier,
     fillLoadingHeight: Boolean = false
@@ -88,7 +88,7 @@ fun ServerSelector(
                 primaryServers.forEach { (_, servers) ->
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         servers.forEach { server ->
-                            Server(modifier.dpadFocusable(onClick = onServerClick, scrollPadding = scrollPadding), server)
+                            Server(modifier.dpadFocusable(onClick = { onServerClick(server) }, scrollPadding = scrollPadding), server)
                         }
                     }
                 }
@@ -122,7 +122,7 @@ fun ServerSelector(
                         AnimatedVisibility(expandedCountry == country) {
                             Column(modifier.padding(bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                 servers.forEach { server ->
-                                    Server(modifier.dpadFocusable(onClick = onServerClick, scrollPadding = scrollPadding), server)
+                                    Server(modifier.dpadFocusable(onClick = { onServerClick(server) }, scrollPadding = scrollPadding), server)
                                 }
                             }
                         }
@@ -143,14 +143,14 @@ fun ServerSelector(
 fun ServerSelectorPreview() {
     val servers = mapOf(
         "US" to listOf(
-            API.ServerList.Server("US_1", "US", "primary", "US", "New York", 0.5),
-            API.ServerList.Server("US_2", "US", "primary", "US", "Washington", 0.17),
-            API.ServerList.Server("US_3", "US", "primary", "US", "Los Angeles", 0.33)
+            API.ServerList.Server("US_1", "US", API.ServerList.Type.PRIMARY, "US", "New York", 0.5),
+            API.ServerList.Server("US_2", "US", API.ServerList.Type.PRIMARY, "US", "Washington", 0.17),
+            API.ServerList.Server("US_3", "US", API.ServerList.Type.PRIMARY, "US", "Los Angeles", 0.33)
         ),
         "DE" to listOf(
-            API.ServerList.Server("DE_1", "DE", "primary", "DE", "Frankfurt", 0.5),
-            API.ServerList.Server("DE_2", "DE", "primary", "DE", "Berlin", 0.17),
-            API.ServerList.Server("DE_3", "DE", "primary", "DE", "Munich", 0.33)
+            API.ServerList.Server("DE_1", "DE", API.ServerList.Type.PRIMARY, "DE", "Frankfurt", 0.5),
+            API.ServerList.Server("DE_2", "DE", API.ServerList.Type.PRIMARY, "DE", "Berlin", 0.17),
+            API.ServerList.Server("DE_3", "DE", API.ServerList.Type.PRIMARY, "DE", "Munich", 0.33)
         )
     )
 

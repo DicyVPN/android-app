@@ -35,4 +35,7 @@
     <string name="logout_title">Sign out of DicyVPN</string>
     <string name="cannot_load_servers">Couldn\'t load DicyVPN servers</string>
     <string name="cannot_load_servers_try_again">Try again</string>
+    <string name="secondary_servers_alert_message">Use of secondary servers allows basic web browsing, but are not suitable for online gaming, primary servers are recommended for optimal experience.</string>
+    <string name="secondary_servers_alert_agree">Don\'t show again</string>
+    <string name="secondary_servers_alert_close">Close</string>
 </resources>

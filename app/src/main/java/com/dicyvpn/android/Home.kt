@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material.icons.rounded.Menu
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DrawerValue
@@ -30,6 +31,7 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberDrawerState
@@ -37,6 +39,7 @@ import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,12 +50,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.navigation.NavHostController
 import com.dicyvpn.android.api.API
 import com.dicyvpn.android.ui.animateScrollTop
 import com.dicyvpn.android.ui.components.ServerSelector
 import com.dicyvpn.android.ui.components.StatusCard
 import com.dicyvpn.android.ui.components.WorldMap
+import com.dicyvpn.android.ui.rememberPreference
 import com.dicyvpn.android.ui.theme.Gray600
 import kotlinx.coroutines.launch
 import retrofit2.Call
@@ -65,8 +70,6 @@ fun Home(navController: NavHostController, windowSizeClass: WindowSizeClass, mod
     var loading by rememberSaveable { mutableStateOf(true) }
     var primaryServers by rememberSaveable { mutableStateOf<Map<String, List<API.ServerList.Server>>>(emptyMap()) }
     var secondaryServers by rememberSaveable { mutableStateOf<Map<String, List<API.ServerList.Server>>>(emptyMap()) }
-    val onServerClick = {
-    }
     val fetchServers = {
         loading = true
         API.get().getServersList().enqueue(object : Callback<API.ServerList> {
@@ -103,6 +106,8 @@ fun Home(navController: NavHostController, windowSizeClass: WindowSizeClass, mod
             }
         )
     )
+    var agreedToUseSecondaryServers by rememberPreference(booleanPreferencesKey("agreedToUseSecondaryServers"), false)
+    val showSecondaryServersAgreement = rememberSaveable { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
@@ -163,14 +168,14 @@ fun Home(navController: NavHostController, windowSizeClass: WindowSizeClass, mod
                             loading,
                             primaryServers,
                             secondaryServers,
-                            onServerClick = {
+                            onServerClick = { server ->
                                 scope.launch {
                                     scrollState.animateScrollTop(MutatePriority.PreventUserInput)
                                 }
                                 scope.launch {
                                     scaffoldState.bottomSheetState.partialExpand()
                                 }
-                                onServerClick()
+                                onServerClick(server, agreedToUseSecondaryServers, showSecondaryServersAgreement)
                             },
                             retry = fetchServers
                         )
@@ -206,11 +211,11 @@ fun Home(navController: NavHostController, windowSizeClass: WindowSizeClass, mod
                     loading,
                     primaryServers,
                     secondaryServers,
-                    onServerClick = {
+                    onServerClick = { server ->
                         scope.launch {
                             scrollState.animateScrollTop(MutatePriority.PreventUserInput)
                         }
-                        onServerClick()
+                        onServerClick(server, agreedToUseSecondaryServers, showSecondaryServersAgreement)
                     },
                     retry = fetchServers,
                     fillLoadingHeight = true
@@ -219,11 +224,45 @@ fun Home(navController: NavHostController, windowSizeClass: WindowSizeClass, mod
         }
     }
 
+    if (showSecondaryServersAgreement.value) {
+        AlertDialog(
+            onDismissRequest = {
+                showSecondaryServersAgreement.value = false
+            },
+            text = {
+                Text(stringResource(R.string.secondary_servers_alert_message))
+            },
+            confirmButton = {
+                TextButton({
+                    agreedToUseSecondaryServers = true
+                    showSecondaryServersAgreement.value = false
+                }) {
+                    Text(stringResource(R.string.secondary_servers_alert_agree))
+                }
+            },
+            dismissButton = {
+                TextButton({
+                    showSecondaryServersAgreement.value = false
+                }) {
+                    Text(stringResource(R.string.secondary_servers_alert_close))
+                }
+            }
+        )
+    }
+
     if (loading) {
         LaunchedEffect(Unit) {
             fetchServers()
         }
     }
+}
+
+fun onServerClick(server: API.ServerList.Server, agreedToUseSecondaryServers: Boolean, showSecondaryServersAgreement: MutableState<Boolean>) {
+    if (server.type == API.ServerList.Type.SECONDARY && !agreedToUseSecondaryServers) {
+        showSecondaryServersAgreement.value = true
+        return
+    }
+    // TODO: Connect to the server
 }
 
 private data class NavigationItem(

@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.dicyvpn.android.BuildConfig
 import com.dicyvpn.android.DicyVPN
+import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
@@ -73,8 +74,15 @@ interface API {
     fun logout(): Call<Unit>
 
     class ServerList(val primary: Map<String, List<Server>>, val secondary: Map<String, List<Server>>) {
+        enum class Type {
+            @SerializedName("primary")
+            PRIMARY,
+            @SerializedName("secondary")
+            SECONDARY
+        }
+
         @Parcelize
-        class Server(val id: String, val name: String, val type: String, val country: String, val city: String, val load: Double) : Parcelable
+        class Server(val id: String, val name: String, val type: Type, val country: String, val city: String, val load: Double) : Parcelable
     }
 
     companion object {

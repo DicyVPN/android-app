@@ -48,7 +48,7 @@ fun Server(modifier: Modifier = Modifier, server: API.ServerList.Server) {
                     server.load > 0.45 -> LoadYellow
                     else -> LoadGreen
                 }
-            ){}
+            ) {}
             Text(server.name, fontFamily = FontFamily.Monospace, color = Gray300)
             Flag(country = server.country)
         }
