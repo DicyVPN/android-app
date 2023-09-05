@@ -265,12 +265,14 @@ fun MainColumn(
             primaryServers,
             secondaryServers,
             onServerClick = { server ->
-                if (server.type != API.ServerList.Type.SECONDARY || agreedToUseSecondaryServers) {
-                    scope.launch {
-                        scrollState.animateScrollTop(MutatePriority.PreventUserInput)
-                    }
+                if (server.type == API.ServerList.Type.SECONDARY && !agreedToUseSecondaryServers) {
+                    showSecondaryServersAgreement.value = true
+                    return@ServerSelector
                 }
-                onServerClick(server, agreedToUseSecondaryServers, showSecondaryServersAgreement)
+                scope.launch {
+                    scrollState.animateScrollTop(MutatePriority.PreventUserInput)
+                }
+                onServerClick(server)
             },
             retry = fetchServers,
             surfaceModifier = modifier.fillMaxSize()
@@ -278,11 +280,7 @@ fun MainColumn(
     }
 }
 
-fun onServerClick(server: API.ServerList.Server, agreedToUseSecondaryServers: Boolean, showSecondaryServersAgreement: MutableState<Boolean>) {
-    if (server.type == API.ServerList.Type.SECONDARY && !agreedToUseSecondaryServers) {
-        showSecondaryServersAgreement.value = true
-        return
-    }
+fun onServerClick(server: API.ServerList.Server) {
     // TODO: Connect to the server
 }
 
