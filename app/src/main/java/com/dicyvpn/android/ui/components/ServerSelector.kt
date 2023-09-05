@@ -38,6 +38,7 @@ import com.dicyvpn.android.ui.dpadFocusable
 import com.dicyvpn.android.ui.theme.DicyVPNTheme
 import com.dicyvpn.android.ui.theme.Gray600
 import com.dicyvpn.android.ui.theme.Gray800
+import java.util.Locale
 
 @Composable
 fun ServerSelector(
@@ -95,7 +96,7 @@ fun ServerSelector(
                             Row(modifier = modifier.padding(16.dp, 8.dp)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Flag(country = country)
-                                    Text(country, modifier = modifier.padding(start = 8.dp), color = Color.White) // TODO: Use country name instead of code
+                                    Text(Locale("", country).displayCountry, modifier = modifier.padding(start = 8.dp), color = Color.White)
                                 }
                                 Spacer(modifier = modifier.weight(1f))
                                 Icon(
