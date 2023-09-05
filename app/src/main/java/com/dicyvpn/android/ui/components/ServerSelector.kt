@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
@@ -50,29 +49,19 @@ fun ServerSelector(
     onServerClick: (API.ServerList.Server) -> Unit,
     retry: () -> Unit,
     modifier: Modifier = Modifier,
-    fillLoadingHeight: Boolean = false
+    surfaceModifier: Modifier = modifier
 ) {
     var expandedCountry by rememberSaveable { mutableStateOf<String?>(null) }
     val scrollPaddingVertical = LocalDensity.current.run { 48.dp.toPx() }
     val scrollPadding = Rect(0f, scrollPaddingVertical, 0f, scrollPaddingVertical)
 
-    Surface(modifier.fillMaxWidth(), color = Gray800, shadowElevation = 4.dp) {
+    Surface(surfaceModifier, color = Gray800, shadowElevation = 4.dp) {
         if (loading) {
-            if (fillLoadingHeight) {
-                Column(modifier.heightIn(min = 64.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-                    LinearProgressIndicator()
-                }
-            } else {
-                Row(
-                    modifier
-                        .fillMaxWidth()
-                        .padding(top = 38.dp, bottom = 300.dp), horizontalArrangement = Arrangement.Center
-                ) {
-                    LinearProgressIndicator()
-                }
+            Row(modifier.padding(32.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                LinearProgressIndicator()
             }
         } else if (primaryServers.isEmpty() && secondaryServers.isEmpty()) {
-            Column(modifier.padding(vertical = 64.dp, horizontal = 32.dp), verticalArrangement = Arrangement.spacedBy(18.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(modifier.padding(32.dp), verticalArrangement = Arrangement.spacedBy(18.dp, Alignment.CenterVertically), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(stringResource(R.string.cannot_load_servers), color = Red300, style = Typography.bodyLarge)
                 Button(retry, ButtonTheme.DARK, ButtonColor.BLUE, ButtonSize.BIG, modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.cannot_load_servers_try_again))

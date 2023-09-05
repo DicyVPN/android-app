@@ -3,11 +3,15 @@ package com.dicyvpn.android
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.MutatePriority
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -18,22 +22,22 @@ import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -58,7 +62,10 @@ import com.dicyvpn.android.ui.components.ServerSelector
 import com.dicyvpn.android.ui.components.StatusCard
 import com.dicyvpn.android.ui.components.WorldMap
 import com.dicyvpn.android.ui.rememberPreference
+import com.dicyvpn.android.ui.theme.Gray500
 import com.dicyvpn.android.ui.theme.Gray600
+import com.dicyvpn.android.vpn.Status
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
@@ -113,7 +120,6 @@ fun Home(navController: NavHostController, windowSizeClass: WindowSizeClass, mod
     val scrollState = rememberScrollState()
 
     if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact) {
-        val scaffoldState = rememberBottomSheetScaffoldState()
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         ModalNavigationDrawer(
             drawerState = drawerState,
@@ -135,10 +141,8 @@ fun Home(navController: NavHostController, windowSizeClass: WindowSizeClass, mod
                 }
             }
         ) {
-            BottomSheetScaffold(
-                scaffoldState = scaffoldState,
-                sheetPeekHeight = 300.dp,
-                sheetShadowElevation = 8.dp,
+            Scaffold(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
                 topBar = {
                     CenterAlignedTopAppBar(
                         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Gray600),
@@ -160,33 +164,21 @@ fun Home(navController: NavHostController, windowSizeClass: WindowSizeClass, mod
                             }
                         }
                     )
-                },
-                sheetContent = {
-                    Column(modifier.verticalScroll(scrollState), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        StatusCard(status)
-                        ServerSelector(
-                            loading,
-                            primaryServers,
-                            secondaryServers,
-                            onServerClick = { server ->
-                                scope.launch {
-                                    scrollState.animateScrollTop(MutatePriority.PreventUserInput)
-                                }
-                                scope.launch {
-                                    scaffoldState.bottomSheetState.partialExpand()
-                                }
-                                onServerClick(server, agreedToUseSecondaryServers, showSecondaryServersAgreement)
-                            },
-                            retry = fetchServers
-                        )
-                    }
                 }
             ) { innerPadding ->
-                WorldMap(verticalSpacing = true, modifier.padding(innerPadding))
+                MainColumn(
+                    scrollState,
+                    scope,
+                    status, loading, primaryServers,
+                    secondaryServers,
+                    agreedToUseSecondaryServers, showSecondaryServersAgreement,
+                    fetchServers,
+                    columnModifier = modifier.padding(top = innerPadding.calculateTopPadding())
+                )
             }
         }
     } else {
-        Row {
+        Row(modifier.background(MaterialTheme.colorScheme.surfaceVariant)) {
             NavigationRail {
                 navigationItems.forEach { item ->
                     NavigationRailItem(
@@ -200,27 +192,15 @@ fun Home(navController: NavHostController, windowSizeClass: WindowSizeClass, mod
             Column(modifier.weight(0.4f)) {
                 WorldMap(verticalSpacing = false, modifier.fillMaxHeight())
             }
-            Column(
-                modifier
-                    .weight(0.6f)
-                    .verticalScroll(scrollState),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                StatusCard(status)
-                ServerSelector(
-                    loading,
-                    primaryServers,
-                    secondaryServers,
-                    onServerClick = { server ->
-                        scope.launch {
-                            scrollState.animateScrollTop(MutatePriority.PreventUserInput)
-                        }
-                        onServerClick(server, agreedToUseSecondaryServers, showSecondaryServersAgreement)
-                    },
-                    retry = fetchServers,
-                    fillLoadingHeight = true
-                )
-            }
+            MainColumn(
+                scrollState,
+                scope,
+                status, loading, primaryServers,
+                secondaryServers,
+                agreedToUseSecondaryServers, showSecondaryServersAgreement,
+                fetchServers,
+                columnModifier = modifier.weight(0.6f)
+            )
         }
     }
 
@@ -254,6 +234,45 @@ fun Home(navController: NavHostController, windowSizeClass: WindowSizeClass, mod
         LaunchedEffect(Unit) {
             fetchServers()
         }
+    }
+}
+
+@Composable
+fun MainColumn(
+    scrollState: ScrollState,
+    scope: CoroutineScope,
+    status: Status,
+    loading: Boolean,
+    primaryServers: Map<String, List<API.ServerList.Server>>,
+    secondaryServers: Map<String, List<API.ServerList.Server>>,
+    agreedToUseSecondaryServers: Boolean,
+    showSecondaryServersAgreement: MutableState<Boolean>,
+    fetchServers: () -> Unit,
+    modifier: Modifier = Modifier,
+    columnModifier: Modifier = modifier
+) {
+    Column(
+        columnModifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+            .height(IntrinsicSize.Max)
+            .background(Gray500),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        StatusCard(status)
+        ServerSelector(
+            loading,
+            primaryServers,
+            secondaryServers,
+            onServerClick = { server ->
+                scope.launch {
+                    scrollState.animateScrollTop(MutatePriority.PreventUserInput)
+                }
+                onServerClick(server, agreedToUseSecondaryServers, showSecondaryServersAgreement)
+            },
+            retry = fetchServers,
+            surfaceModifier = modifier.fillMaxSize()
+        )
     }
 }
 
