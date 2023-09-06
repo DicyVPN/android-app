@@ -1,6 +1,7 @@
 package com.dicyvpn.android
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -66,14 +67,15 @@ private fun logout(context: Context, navController: NavHostController, finally: 
     API.get().logout().enqueue(object : Callback<Unit> {
         override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
             try {
-                if (!response.isSuccessful) {
-                    Toast.makeText(context, JSONObject(response.errorBody()!!.string()).getString("message"), Toast.LENGTH_LONG).show()
-                }
-
                 API.removeAuthInfo()
 
                 navController.navigate("login") {
                     popUpTo(0)
+                }
+
+                if (!response.isSuccessful) {
+                    Log.e("Logout", "Received error: ${response.errorBody()!!.string()}")
+                    Toast.makeText(context, JSONObject(response.errorBody()!!.string()).getString("message"), Toast.LENGTH_LONG).show()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
