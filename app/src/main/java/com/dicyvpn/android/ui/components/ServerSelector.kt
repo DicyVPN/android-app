@@ -77,7 +77,7 @@ fun ServerSelector(
                 primaryServers.forEach { (_, servers) ->
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         servers.forEach { server ->
-                            Server(modifier.dpadFocusable(onClick = { onServerClick(server) }, scrollPadding = scrollPadding), server)
+                            Server(server, surfaceModifier = modifier.dpadFocusable(onClick = { onServerClick(server) }, scrollPadding = scrollPadding))
                         }
                     }
                 }
@@ -111,7 +111,7 @@ fun ServerSelector(
                         AnimatedVisibility(expandedCountry == country) {
                             Column(modifier.padding(bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                 servers.forEach { server ->
-                                    Server(modifier.dpadFocusable(onClick = { onServerClick(server) }, scrollPadding = scrollPadding), server)
+                                    Server(server, surfaceModifier = modifier.dpadFocusable(onClick = { onServerClick(server) }, scrollPadding = scrollPadding))
                                 }
                             }
                         }

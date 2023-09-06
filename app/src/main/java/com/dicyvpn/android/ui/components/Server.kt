@@ -31,8 +31,8 @@ import com.dicyvpn.android.ui.theme.LoadYellow
 import com.dicyvpn.android.ui.theme.Shapes
 
 @Composable
-fun Server(modifier: Modifier = Modifier, server: API.ServerList.Server) {
-    Surface(color = Gray900, contentColor = Color.White, shape = Shapes.medium) {
+fun Server(server: API.ServerList.Server, modifier: Modifier = Modifier, surfaceModifier: Modifier = modifier) {
+    Surface(surfaceModifier, color = Gray900, contentColor = Color.White, shape = Shapes.medium) {
         Row(
             modifier = modifier
                 .fillMaxWidth()
