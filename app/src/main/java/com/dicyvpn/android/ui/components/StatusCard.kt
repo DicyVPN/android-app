@@ -55,7 +55,7 @@ fun StatusCard(status: Status, lastServer: MutableState<API.ServerList.Server?>,
             Status.CONNECTED -> R.string.label_disconnect
             Status.CONNECTING -> R.string.label_connecting
             Status.DISCONNECTING -> R.string.label_disconnecting
-            Status.NOT_RUNNING -> R.string.label_connect
+            Status.DISCONNECTED -> R.string.label_connect
         }
     )
 

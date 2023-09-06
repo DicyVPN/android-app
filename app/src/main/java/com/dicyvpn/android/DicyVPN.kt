@@ -35,7 +35,7 @@ import java.util.Locale
 class DicyVPN : Application() {
     private var userAgent = "DicyVPN/" + BuildConfig.VERSION_NAME + " (Android)"
     private val coroutineScope = CoroutineScope(Job() + Dispatchers.Main.immediate)
-    private val status: MutableState<Status> = mutableStateOf(Status.NOT_RUNNING)
+    private val status: MutableState<Status> = mutableStateOf(Status.DISCONNECTED)
     private val lastServer: MutableState<API.ServerList.Server?> = mutableStateOf(null)
     private var backend: GoBackend? = null
     private val tunnel: VPNTunnel = VPNTunnel(status)
@@ -128,6 +128,8 @@ class DicyVPN : Application() {
         fun getStatus() = get().status
 
         fun getLastServer() = get().lastServer
+
+        fun getTunnel() = get().tunnel
 
         fun setTunnelUp(config: String) {
             val instance = get()

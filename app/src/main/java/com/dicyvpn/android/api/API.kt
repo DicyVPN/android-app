@@ -20,6 +20,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 import java.lang.ref.WeakReference
 
 const val TAG = "DicyVPN/API"
@@ -69,6 +70,12 @@ interface API {
     @GET("servers/list")
     fun getServersList(): Call<ServerList>
 
+    @POST("servers/connect/{id}")
+    fun connect(@Path("id") id: String, @Body connectionRequest: ConnectionRequest): Call<ConnectionInfo>
+
+    @POST("servers/disconnect/{id}")
+    fun disconnect(@Path("id") id: String, @Body connectionRequest: ConnectionRequest): Call<Unit>
+
     @GET("logout")
     fun logout(): Call<Unit>
 
@@ -76,12 +83,21 @@ interface API {
         enum class Type {
             @SerializedName("primary")
             PRIMARY,
+
             @SerializedName("secondary")
             SECONDARY
         }
 
         @Parcelize
         class Server(val id: String, val name: String, val type: Type, val country: String, val city: String, val load: Double) : Parcelable
+    }
+
+    class ConnectionRequest(val type: String, val protocol: String)
+
+    class ConnectionInfo(val serverIp: String, val publicKey: String, val internalIp: String, val ports: Ports) {
+        class Ports(val wireguard: ProtocolPorts, val openvpn: ProtocolPorts) {
+            class ProtocolPorts(val udp: List<Int>, val tcp: List<Int>)
+        }
     }
 
     companion object {

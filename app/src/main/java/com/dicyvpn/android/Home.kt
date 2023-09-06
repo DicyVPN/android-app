@@ -71,6 +71,7 @@ import com.dicyvpn.android.ui.rememberPreference
 import com.dicyvpn.android.ui.theme.Gray500
 import com.dicyvpn.android.ui.theme.Gray600
 import com.dicyvpn.android.vpn.Status
+import com.dicyvpn.android.vpn.VPN
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -269,7 +270,7 @@ fun MainColumn(
             Log.i("DicyVPN/Home", "VPN permission granted, starting tunnel, resultCode: ${it.resultCode}")
             scope.launch {
                 withContext(Dispatchers.IO) {
-                    onServerClick(clickedServer!!, scope, status, null)
+                    onServerClick(clickedServer!!, scope, null)
                 }
             }
         } else {
@@ -286,8 +287,12 @@ fun MainColumn(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         StatusCard(status, lastServer, connectToLast = {
-            clickedServer = lastServer.value
-            onServerClick(clickedServer!!, scope, status, launcherActivity)
+            if (status == Status.CONNECTED) {
+                VPN.stop(currentServer = lastServer.value, newServer = null)
+            } else {
+                clickedServer = lastServer.value
+                onServerClick(clickedServer!!, scope, launcherActivity)
+            }
         })
         ServerSelector(
             loading,
@@ -302,7 +307,7 @@ fun MainColumn(
                     scrollState.animateScrollTop(MutatePriority.PreventUserInput)
                 }
                 clickedServer = server
-                onServerClick(clickedServer!!, scope, status, launcherActivity)
+                onServerClick(clickedServer!!, scope, launcherActivity)
             },
             retry = fetchServers,
             surfaceModifier = modifier.fillMaxSize()
@@ -310,21 +315,17 @@ fun MainColumn(
     }
 }
 
-fun onServerClick(server: API.ServerList.Server, scope: CoroutineScope, status: Status, launcherActivity: ManagedActivityResultLauncher<Intent, ActivityResult>?) {
+fun onServerClick(server: API.ServerList.Server, scope: CoroutineScope, launcherActivity: ManagedActivityResultLauncher<Intent, ActivityResult>?) {
     scope.launch {
         withContext(Dispatchers.IO) {
-            if (status == Status.CONNECTED) {
-                DicyVPN.setTunnelDown()
+            val intent = VpnService.prepare(DicyVPN.get())
+            if (intent != null) {
+                launcherActivity?.launch(intent)
             } else {
-                val intent = VpnService.prepare(DicyVPN.get())
-                if (intent != null) {
-                    launcherActivity?.launch(intent)
-                } else {
-                    Log.i("DicyVPN/Home", "VPN permission granted")
-                    //DicyVPN.setTunnelUp("") // TODO: Use config
-                    // TODO: Connect to the server
-                    DicyVPN.getLastServer().value = server
-                }
+                Log.i("DicyVPN/Home", "VPN permission granted")
+                val lastServer = DicyVPN.getLastServer()
+                VPN.connect(server, lastServer.value) // TODO: surround with try/catch and show error messages
+                lastServer.value = server
             }
         }
     }
