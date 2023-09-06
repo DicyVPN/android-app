@@ -152,7 +152,7 @@ fun Login(navController: NavHostController, modifier: Modifier = Modifier) {
                         label = { Text(stringResource(R.string.password)) },
                         singleLine = true,
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        shape = Shapes.medium, // TODO: add password visibility toggle
+                        shape = Shapes.medium,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         keyboardActions = KeyboardActions(
                             onDone = { loginAction() }
