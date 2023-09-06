@@ -86,7 +86,7 @@ class VPN {
 
         private fun getWireGuardConfig(info: API.ConnectionInfo): String {
             val dns = arrayOf("1.1.1.1", "1.1.0.0")
-            val privateKey = runBlocking {
+            val privateKey = info.privateKey ?: runBlocking {
                 DicyVPN.getPreferencesDataStore().data.map { it[stringPreferencesKey("auth.privateKey")] }.first()
             }
 

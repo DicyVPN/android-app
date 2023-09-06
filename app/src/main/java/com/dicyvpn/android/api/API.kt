@@ -94,7 +94,7 @@ interface API {
 
     class ConnectionRequest(val type: String, val protocol: String)
 
-    class ConnectionInfo(val serverIp: String, val publicKey: String, val internalIp: String, val ports: Ports) {
+    class ConnectionInfo(val serverIp: String, val publicKey: String, val privateKey: String?, val internalIp: String, val ports: Ports) {
         class Ports(val wireguard: ProtocolPorts, val openvpn: ProtocolPorts) {
             class ProtocolPorts(val udp: List<Int>, val tcp: List<Int>)
         }
