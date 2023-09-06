@@ -3,6 +3,7 @@ package com.dicyvpn.android
 import android.content.Context
 import android.util.Patterns
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -81,6 +82,7 @@ fun Login(navController: NavHostController, modifier: Modifier = Modifier) {
     var dialogLinkText by rememberSaveable { mutableStateOf("") }
 
     val context = LocalContext.current
+    val uriHandler = LocalUriHandler.current
     val loginAction = {
         loading = true
         login(context, email, password, navController) { message, link, linkText ->
@@ -183,10 +185,22 @@ fun Login(navController: NavHostController, modifier: Modifier = Modifier) {
                             )
                             .padding(top = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        // TODO: make clickable
-                        Text(stringResource(R.string.create_an_account), color = Gray200, style = TextStyle(textDecoration = TextDecoration.Underline))
-                        // TODO: make clickable
-                        Text(stringResource(R.string.recover_your_password), color = Gray200, style = TextStyle(textDecoration = TextDecoration.Underline))
+                        Text(
+                            stringResource(R.string.create_an_account),
+                            color = Gray200,
+                            style = TextStyle(textDecoration = TextDecoration.Underline),
+                            modifier = modifier.clickable {
+                                uriHandler.openUri("https://dicyvpn.com/prices")
+                            }
+                        )
+                        Text(
+                            stringResource(R.string.recover_your_password),
+                            color = Gray200,
+                            style = TextStyle(textDecoration = TextDecoration.Underline),
+                            modifier = modifier.clickable {
+                                uriHandler.openUri("https://dicyvpn.com/login/request-password-reset")
+                            }
+                        )
                     }
                 }
             }
@@ -194,7 +208,6 @@ fun Login(navController: NavHostController, modifier: Modifier = Modifier) {
     }
 
     if (openDialog) {
-        val uriHandler = LocalUriHandler.current
         AlertDialog(
             onDismissRequest = {
                 openDialog = false
