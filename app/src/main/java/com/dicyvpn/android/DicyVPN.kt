@@ -1,6 +1,7 @@
 package com.dicyvpn.android
 
 import android.app.Application
+import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import androidx.compose.runtime.MutableState
@@ -32,6 +33,7 @@ import java.lang.ref.WeakReference
 import java.util.Locale
 
 class DicyVPN : Application() {
+    private var userAgent = "DicyVPN/" + BuildConfig.VERSION_NAME + " (Android)"
     private val coroutineScope = CoroutineScope(Job() + Dispatchers.Main.immediate)
     private val status: MutableState<Status> = mutableStateOf(Status.NOT_RUNNING)
     private val lastServer: MutableState<API.ServerList.Server?> = mutableStateOf(null)
@@ -41,7 +43,21 @@ class DicyVPN : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        Log.i(TAG, USER_AGENT)
+        val isTV = packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)
+        userAgent = String.format(
+            Locale.ENGLISH,
+            "DicyVPN/%s (Android%s %s; SDK %d; %s; %s; %s %s)",
+            BuildConfig.VERSION_NAME,
+            if (isTV) " TV" else "",
+            Build.VERSION.RELEASE,
+            Build.VERSION.SDK_INT,
+            if (Build.SUPPORTED_ABIS.isNotEmpty()) Build.SUPPORTED_ABIS[0] else "Unknown ABI",
+            Build.BOARD,
+            Build.MANUFACTURER,
+            Build.MODEL
+        )
+        Log.i(TAG, userAgent)
+
         preferencesDataStore = PreferenceDataStoreFactory.create {
             applicationContext.preferencesDataStoreFile("settings")
         }
@@ -95,17 +111,11 @@ class DicyVPN : Application() {
         super.onTerminate()
     }
 
+    fun getUserAgent(): String {
+        return userAgent
+    }
+
     companion object {
-        val USER_AGENT = String.format(
-            Locale.ENGLISH,
-            "DicyVPN Android v%s (SDK %d; %s; %s; %s %s)",
-            BuildConfig.VERSION_NAME,
-            Build.VERSION.SDK_INT,
-            if (Build.SUPPORTED_ABIS.isNotEmpty()) Build.SUPPORTED_ABIS[0] else "Unknown ABI",
-            Build.BOARD,
-            Build.MANUFACTURER,
-            Build.MODEL
-        )
         private const val TAG = "DicyVPN/Application"
         private lateinit var weakSelf: WeakReference<DicyVPN>
 

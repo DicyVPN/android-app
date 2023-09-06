@@ -5,7 +5,6 @@ import android.util.Base64
 import android.util.Log
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.dicyvpn.android.BuildConfig
 import com.dicyvpn.android.DicyVPN
 import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.flow.first
@@ -25,7 +24,6 @@ import java.lang.ref.WeakReference
 
 const val TAG = "DicyVPN/API"
 const val BASE_URL = "https://api.dicyvpn.com"
-const val USER_AGENT = "DicyVPN Android v." + BuildConfig.VERSION_NAME
 
 interface PublicAPI {
     @POST("login")
@@ -42,12 +40,13 @@ interface PublicAPI {
         fun get(): PublicAPI {
             if (apiService.get() == null) {
                 Log.i(TAG, "Creating new PublicAPI service")
+                val userAgent = DicyVPN.get().getUserAgent()
                 val client = OkHttpClient.Builder()
                     .addNetworkInterceptor { chain ->
                         chain.proceed(
                             chain.request()
                                 .newBuilder()
-                                .header("User-Agent", USER_AGENT)
+                                .header("User-Agent", userAgent)
                                 .build()
                         )
                     }
@@ -90,6 +89,7 @@ interface API {
         fun get(): API {
             if (apiService.get() == null) {
                 Log.i(TAG, "Creating new API service")
+                val userAgent = DicyVPN.get().getUserAgent()
                 val flowToken = DicyVPN.getPreferencesDataStore().data.map { it[stringPreferencesKey("auth.token")] ?: "" }
 
                 val client = OkHttpClient.Builder()
@@ -100,7 +100,7 @@ interface API {
                         chain.proceed(
                             chain.request()
                                 .newBuilder()
-                                .header("User-Agent", USER_AGENT)
+                                .header("User-Agent", userAgent)
                                 .header("Authorization", "Bearer $token")
                                 .build()
                         )
