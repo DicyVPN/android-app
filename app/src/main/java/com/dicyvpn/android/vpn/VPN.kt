@@ -7,6 +7,7 @@ import com.dicyvpn.android.api.API
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
+import org.json.JSONObject
 import retrofit2.Callback
 
 class VPN {
@@ -16,7 +17,32 @@ class VPN {
         @Throws(Exception::class)
         fun connect(server: API.ServerList.Server, currentServer: API.ServerList.Server?) {
             DicyVPN.getStatus().value = Status.CONNECTING
-            val info = API.get().connect(id = server.id, API.ConnectionRequest(type = server.type.name.lowercase(), protocol = "wireguard")).execute().body()!!
+            val response = API.get().connect(id = server.id, API.ConnectionRequest(type = server.type.name.lowercase(), protocol = "wireguard")).execute()
+
+            if (!response.isSuccessful) {
+                DicyVPN.getStatus().value = Status.DISCONNECTED
+
+                val error = response.errorBody()?.string()
+                val code: String
+                val message: String
+
+                try {
+                    val json = JSONObject(error!!)
+                    val reply = json.getJSONObject("reply")
+                    code = reply.getString("code")
+                    message = reply.getString("message")
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    throw Exception("Unknown error, please try again later\n\n$error")
+                }
+
+                when (code) {
+                    "NO_SUBSCRIPTION" -> throw NoSubscriptionException()
+                    else -> throw Exception(message)
+                }
+            }
+
+            val info = response.body()!!
             stop(true, currentServer, newServer = server)
             Log.i(TAG, "Connecting to a WireGuard ${server.name} (${server.id})")
 
@@ -79,4 +105,6 @@ class VPN {
             """.trimIndent()
         }
     }
+
+    class NoSubscriptionException : Exception()
 }

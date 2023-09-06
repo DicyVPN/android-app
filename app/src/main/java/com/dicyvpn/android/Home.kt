@@ -1,8 +1,10 @@
 package com.dicyvpn.android
 
+import android.app.Activity
 import android.content.Intent
 import android.net.VpnService
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
@@ -57,6 +59,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -236,7 +240,7 @@ fun Home(navController: NavHostController, windowSizeClass: WindowSizeClass, mod
                 TextButton({
                     showSecondaryServersAgreement.value = false
                 }) {
-                    Text(stringResource(R.string.secondary_servers_alert_close))
+                    Text(stringResource(R.string.dialog_close))
                 }
             }
         )
@@ -264,13 +268,48 @@ fun MainColumn(
     modifier: Modifier = Modifier,
     columnModifier: Modifier = modifier
 ) {
-    var clickedServer by remember { mutableStateOf<API.ServerList.Server?>(null) }
+    val activity = LocalContext.current as Activity
+    var clickedServer by rememberSaveable { mutableStateOf<API.ServerList.Server?>(null) }
+    var showDialog by rememberSaveable { mutableStateOf(false) }
+    var dialogMessage by rememberSaveable { mutableStateOf("") }
+    var dialogLink by rememberSaveable { mutableStateOf("") }
+    var dialogButtonText by rememberSaveable { mutableStateOf("") }
+
+    fun onServerClick(scope: CoroutineScope, launcherActivity: ManagedActivityResultLauncher<Intent, ActivityResult>?) {
+        scope.launch {
+            withContext(Dispatchers.IO) {
+                val intent = VpnService.prepare(DicyVPN.get())
+                if (intent != null) {
+                    launcherActivity?.launch(intent)
+                } else {
+                    Log.i("DicyVPN/Home", "VPN permission granted")
+
+                    try {
+                        VPN.connect(clickedServer!!, lastServer.value)
+                    } catch (e: VPN.NoSubscriptionException) {
+                        dialogMessage = activity.getString(R.string.no_active_subscription)
+                        dialogLink = activity.getString(R.string.url_prices)
+                        dialogButtonText = activity.getString(R.string.take_a_look_at_our_plans)
+                        showDialog = true
+                    } catch (e: Exception) {
+                        Log.e("DicyVPN/Home", "Failed to connect to server", e)
+                        activity.runOnUiThread {
+                            Toast.makeText(activity, e.message ?: e.toString(), Toast.LENGTH_LONG).show()
+                        }
+                    }
+
+                    lastServer.value = clickedServer
+                }
+            }
+        }
+    }
+
     val launcherActivity = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult(), onResult = {
         if (it.resultCode != 0) {
             Log.i("DicyVPN/Home", "VPN permission granted, starting tunnel, resultCode: ${it.resultCode}")
             scope.launch {
                 withContext(Dispatchers.IO) {
-                    onServerClick(clickedServer!!, scope, null)
+                    onServerClick(scope, null)
                 }
             }
         } else {
@@ -291,7 +330,7 @@ fun MainColumn(
                 VPN.stop(currentServer = lastServer.value, newServer = null)
             } else {
                 clickedServer = lastServer.value
-                onServerClick(clickedServer!!, scope, launcherActivity)
+                onServerClick(scope, launcherActivity)
             }
         })
         ServerSelector(
@@ -307,27 +346,37 @@ fun MainColumn(
                     scrollState.animateScrollTop(MutatePriority.PreventUserInput)
                 }
                 clickedServer = server
-                onServerClick(clickedServer!!, scope, launcherActivity)
+                onServerClick(scope, launcherActivity)
             },
             retry = fetchServers,
             surfaceModifier = modifier.fillMaxSize()
         )
     }
-}
 
-fun onServerClick(server: API.ServerList.Server, scope: CoroutineScope, launcherActivity: ManagedActivityResultLauncher<Intent, ActivityResult>?) {
-    scope.launch {
-        withContext(Dispatchers.IO) {
-            val intent = VpnService.prepare(DicyVPN.get())
-            if (intent != null) {
-                launcherActivity?.launch(intent)
-            } else {
-                Log.i("DicyVPN/Home", "VPN permission granted")
-                val lastServer = DicyVPN.getLastServer()
-                VPN.connect(server, lastServer.value) // TODO: surround with try/catch and show error messages
-                lastServer.value = server
+    val uriHandler = LocalUriHandler.current
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showDialog = false
+            },
+            text = {
+                Text(dialogMessage)
+            },
+            confirmButton = {
+                TextButton({
+                    uriHandler.openUri(dialogLink)
+                }) {
+                    Text(dialogButtonText)
+                }
+            },
+            dismissButton = {
+                TextButton({
+                    showDialog = false
+                }) {
+                    Text(stringResource(R.string.dialog_close))
+                }
             }
-        }
+        )
     }
 }
 

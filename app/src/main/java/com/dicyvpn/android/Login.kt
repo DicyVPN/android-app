@@ -275,11 +275,11 @@ fun login(context: Context, email: String, password: String, navController: NavH
                     val reply = json.getJSONObject("reply")
                     when (reply.getString("code")) {
                         "NO_SUBSCRIPTION" -> onError(
-                            context.getString(R.string.no_active_subscription), "https://dicyvpn.com/prices", context.getString(R.string.take_a_look_at_our_plans)
+                            context.getString(R.string.no_active_subscription), context.getString(R.string.url_prices), context.getString(R.string.take_a_look_at_our_plans)
                         )
 
                         "DEVICES_LIMIT_REACHED" -> onError(
-                            context.getString(R.string.reached_the_maximum_number_of_devices), "https://dicyvpn.com/account", context.getString(R.string.check_your_devices_list)
+                            context.getString(R.string.reached_the_maximum_number_of_devices), context.getString(R.string.url_account), context.getString(R.string.check_your_devices_list)
                         )
 
                         else -> onError(reply.getString("message"), null, null)

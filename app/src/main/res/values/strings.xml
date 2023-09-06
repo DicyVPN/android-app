@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">DicyVPN</string>
+    <string name="app_name" translatable="false">DicyVPN</string>
     <string name="world_map">World Map</string>
     <string name="dicyvpn_logo">DicyVPN Logo</string>
     <string name="latency">Latency</string>
@@ -21,8 +21,8 @@
     <string name="other_servers">Other Servers</string>
     <string name="collapse">Collapse</string>
     <string name="expand">Expand</string>
-    <string name="label_connecting">Connecting...</string>
-    <string name="label_disconnecting">Disconnecting...</string>
+    <string name="label_connecting">Connecting…</string>
+    <string name="label_disconnecting">Disconnecting…</string>
     <string name="label_connect">Connect</string>
     <string name="connected">Connected</string>
     <string name="not_connected">Disconnected</string>
@@ -37,6 +37,7 @@
     <string name="cannot_load_servers_try_again">Try again</string>
     <string name="secondary_servers_alert_message">Use of secondary servers allows basic web browsing, but are not suitable for online gaming, primary servers are recommended for optimal experience.</string>
     <string name="secondary_servers_alert_agree">Don\'t show again</string>
-    <string name="secondary_servers_alert_close">Close</string>
     <string name="choose_a_server_from_the_list">Choose a server to connect to from the list</string>
+    <string name="url_prices" translatable="false">https://dicyvpn.com/prices</string>
+    <string name="url_account" translatable="false">https://dicyvpn.com/account</string>
 </resources>
