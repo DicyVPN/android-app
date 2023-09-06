@@ -65,25 +65,21 @@ fun Logout(navController: NavHostController, modifier: Modifier = Modifier) {
 private fun logout(context: Context, navController: NavHostController, finally: () -> Unit) {
     API.get().logout().enqueue(object : Callback<Unit> {
         override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
-            if (response.isSuccessful) {
-                try {
-                    API.removeAuthInfo()
-
-                    navController.navigate("login") {
-                        popUpTo(0)
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            } else {
-                try {
+            try {
+                if (!response.isSuccessful) {
                     Toast.makeText(context, JSONObject(response.errorBody()!!.string()).getString("message"), Toast.LENGTH_LONG).show()
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    Toast.makeText(context, "Unknown error, please try again later", Toast.LENGTH_LONG).show()
                 }
+
+                API.removeAuthInfo()
+
+                navController.navigate("login") {
+                    popUpTo(0)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                finally()
             }
-            finally()
         }
 
         override fun onFailure(call: Call<Unit>, t: Throwable) {
