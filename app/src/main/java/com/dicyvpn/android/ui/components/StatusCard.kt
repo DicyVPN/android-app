@@ -1,16 +1,11 @@
 package com.dicyvpn.android.ui.components
 
-import android.net.VpnService
-import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
@@ -33,36 +27,28 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.dicyvpn.android.DicyVPN
 import com.dicyvpn.android.R
 import com.dicyvpn.android.api.API
 import com.dicyvpn.android.ui.theme.BrightGreen
 import com.dicyvpn.android.ui.theme.DicyVPNTheme
 import com.dicyvpn.android.ui.theme.Gray800
 import com.dicyvpn.android.ui.theme.Red300
-import com.dicyvpn.android.ui.theme.Shapes
 import com.dicyvpn.android.ui.theme.Typography
 import com.dicyvpn.android.vpn.Status
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @Composable
-fun StatusCard(status: Status, lastServer: MutableState<API.ServerList.Server?>, modifier: Modifier = Modifier) {
-    val scope = rememberCoroutineScope()
-
+fun StatusCard(status: Status, lastServer: MutableState<API.ServerList.Server?>, connectToLast: () -> Unit, modifier: Modifier = Modifier) {
+    val server = lastServer.value
     val isVPNLoading = status == Status.CONNECTING || status == Status.DISCONNECTING
     val connectButtonLabel = stringResource(
         when (status) {
@@ -74,7 +60,7 @@ fun StatusCard(status: Status, lastServer: MutableState<API.ServerList.Server?>,
     )
 
     Surface(modifier.fillMaxWidth(), color = Gray800, shadowElevation = 4.dp) {
-        if (lastServer.value != null) {
+        if (server != null) {
             Column(modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Row(
                     modifier.fillMaxWidth(),
@@ -111,46 +97,14 @@ fun StatusCard(status: Status, lastServer: MutableState<API.ServerList.Server?>,
                         .fillMaxWidth()
                         .height(1.dp), color = BrightGreen
                 ) {}
-                Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Germania")
+                Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(server.city)
                     Spacer(modifier = modifier.weight(1f))
-                    Text(fontFamily = FontFamily.Monospace, text = "DE_01")
-                    Image(
-                        painterResource(id = R.drawable.flag_de), modifier = modifier
-                            .width(24.dp)
-                            .clip(Shapes.small), contentDescription = null
-                    )
+                    Text(server.name, fontFamily = FontFamily.Monospace)
+                    Flag(country = server.country)
                 }
-                val launcherActivity = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult(), onResult = {
-                    if (it.resultCode != 0) {
-                        Log.i("DicyVPN/Home", "VPN permission granted, starting tunnel, resultCode: ${it.resultCode}")
-                        scope.launch {
-                            withContext(Dispatchers.IO) {
-                                DicyVPN.setTunnelUp("") // TODO: Use config
-                            }
-                        }
-                    } else {
-                        Log.i("DicyVPN/Home", "VPN permission denied")
-                    }
-                })
                 Button(
-                    {
-                        scope.launch {
-                            withContext(Dispatchers.IO) {
-                                if (status == Status.CONNECTED) {
-                                    DicyVPN.setTunnelDown()
-                                } else {
-                                    val intent = VpnService.prepare(DicyVPN.get())
-                                    if (intent != null) {
-                                        launcherActivity.launch(intent)
-                                    } else {
-                                        Log.i("DicyVPN/Home", "VPN permission already granted")
-                                        DicyVPN.setTunnelUp("") // TODO: Use config
-                                    }
-                                }
-                            }
-                        }
-                    },
+                    connectToLast,
                     ButtonTheme.DARK,
                     if (status == Status.CONNECTED || status == Status.DISCONNECTING) ButtonColor.RED else ButtonColor.GREEN,
                     ButtonSize.NORMAL,
@@ -174,6 +128,6 @@ fun StatusCard(status: Status, lastServer: MutableState<API.ServerList.Server?>,
 @Composable
 fun StatusCardPreview() {
     DicyVPNTheme {
-        StatusCard(Status.CONNECTED, remember { mutableStateOf(null) })
+        StatusCard(Status.CONNECTED, remember { mutableStateOf(null) }, {})
     }
 }

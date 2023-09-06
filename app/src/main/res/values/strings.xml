@@ -38,4 +38,5 @@
     <string name="secondary_servers_alert_message">Use of secondary servers allows basic web browsing, but are not suitable for online gaming, primary servers are recommended for optimal experience.</string>
     <string name="secondary_servers_alert_agree">Don\'t show again</string>
     <string name="secondary_servers_alert_close">Close</string>
+    <string name="choose_a_server_from_the_list">Choose a server to connect to from the list</string>
 </resources>

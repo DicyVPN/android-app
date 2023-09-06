@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.dicyvpn.android.api.API
 import com.dicyvpn.android.ui.theme.Gray300
@@ -57,7 +58,7 @@ fun Server(modifier: Modifier = Modifier, server: API.ServerList.Server) {
 
 @SuppressLint("DiscouragedApi")
 @Composable
-fun Flag(modifier: Modifier = Modifier, country: String) {
+fun Flag(country: String, modifier: Modifier = Modifier, width: Dp = 24.dp) {
     val flagId = LocalContext.current.resources.getIdentifier(
         "flag_${country.lowercase()}",
         "drawable",
@@ -66,7 +67,7 @@ fun Flag(modifier: Modifier = Modifier, country: String) {
     Image(
         painterResource(id = flagId),
         modifier = modifier
-            .width(24.dp)
+            .width(width)
             .clip(Shapes.small),
         contentDescription = null
     )

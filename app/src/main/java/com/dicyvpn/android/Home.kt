@@ -1,6 +1,12 @@
 package com.dicyvpn.android
 
+import android.content.Intent
+import android.net.VpnService
 import android.util.Log
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.ScrollState
@@ -66,7 +72,9 @@ import com.dicyvpn.android.ui.theme.Gray500
 import com.dicyvpn.android.ui.theme.Gray600
 import com.dicyvpn.android.vpn.Status
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -96,6 +104,7 @@ fun Home(navController: NavHostController, windowSizeClass: WindowSizeClass, mod
         })
     }
     val status by remember { DicyVPN.getStatus() }
+    val lastServer = remember { DicyVPN.getLastServer() }
 
     val navigationItems = listOf(
         NavigationItem(
@@ -173,6 +182,7 @@ fun Home(navController: NavHostController, windowSizeClass: WindowSizeClass, mod
                     secondaryServers,
                     agreedToUseSecondaryServers, showSecondaryServersAgreement,
                     fetchServers,
+                    lastServer,
                     columnModifier = modifier.padding(top = innerPadding.calculateTopPadding())
                 )
             }
@@ -199,6 +209,7 @@ fun Home(navController: NavHostController, windowSizeClass: WindowSizeClass, mod
                 secondaryServers,
                 agreedToUseSecondaryServers, showSecondaryServersAgreement,
                 fetchServers,
+                lastServer,
                 columnModifier = modifier.weight(0.6f)
             )
         }
@@ -248,9 +259,24 @@ fun MainColumn(
     agreedToUseSecondaryServers: Boolean,
     showSecondaryServersAgreement: MutableState<Boolean>,
     fetchServers: () -> Unit,
+    lastServer: MutableState<API.ServerList.Server?>,
     modifier: Modifier = Modifier,
     columnModifier: Modifier = modifier
 ) {
+    var clickedServer by remember { mutableStateOf<API.ServerList.Server?>(null) }
+    val launcherActivity = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult(), onResult = {
+        if (it.resultCode != 0) {
+            Log.i("DicyVPN/Home", "VPN permission granted, starting tunnel, resultCode: ${it.resultCode}")
+            scope.launch {
+                withContext(Dispatchers.IO) {
+                    onServerClick(clickedServer!!, scope, status, null)
+                }
+            }
+        } else {
+            Log.i("DicyVPN/Home", "VPN permission denied")
+        }
+    })
+
     Column(
         columnModifier
             .fillMaxSize()
@@ -259,7 +285,10 @@ fun MainColumn(
             .background(Gray500),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        StatusCard(status)
+        StatusCard(status, lastServer, connectToLast = {
+            clickedServer = lastServer.value
+            onServerClick(clickedServer!!, scope, status, launcherActivity)
+        })
         ServerSelector(
             loading,
             primaryServers,
@@ -272,7 +301,8 @@ fun MainColumn(
                 scope.launch {
                     scrollState.animateScrollTop(MutatePriority.PreventUserInput)
                 }
-                onServerClick(server)
+                clickedServer = server
+                onServerClick(clickedServer!!, scope, status, launcherActivity)
             },
             retry = fetchServers,
             surfaceModifier = modifier.fillMaxSize()
@@ -280,8 +310,24 @@ fun MainColumn(
     }
 }
 
-fun onServerClick(server: API.ServerList.Server) {
-    // TODO: Connect to the server
+fun onServerClick(server: API.ServerList.Server, scope: CoroutineScope, status: Status, launcherActivity: ManagedActivityResultLauncher<Intent, ActivityResult>?) {
+    scope.launch {
+        withContext(Dispatchers.IO) {
+            if (status == Status.CONNECTED) {
+                DicyVPN.setTunnelDown()
+            } else {
+                val intent = VpnService.prepare(DicyVPN.get())
+                if (intent != null) {
+                    launcherActivity?.launch(intent)
+                } else {
+                    Log.i("DicyVPN/Home", "VPN permission granted")
+                    //DicyVPN.setTunnelUp("") // TODO: Use config
+                    // TODO: Connect to the server
+                    DicyVPN.getLastServer().value = server
+                }
+            }
+        }
+    }
 }
 
 private data class NavigationItem(

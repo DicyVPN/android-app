@@ -5,10 +5,14 @@ import android.os.Build
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshotFlow
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStoreFile
+import com.dicyvpn.android.api.API
 import com.dicyvpn.android.vpn.Status
 import com.dicyvpn.android.vpn.VPNTunnel
 import com.wireguard.android.backend.GoBackend
@@ -18,6 +22,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.io.StringReader
 import java.lang.ref.WeakReference
@@ -25,7 +33,8 @@ import java.util.Locale
 
 class DicyVPN : Application() {
     private val coroutineScope = CoroutineScope(Job() + Dispatchers.Main.immediate)
-    private var status: MutableState<Status> = mutableStateOf(Status.NOT_RUNNING)
+    private val status: MutableState<Status> = mutableStateOf(Status.NOT_RUNNING)
+    private val lastServer: MutableState<API.ServerList.Server?> = mutableStateOf(null)
     private var backend: GoBackend? = null
     private val tunnel: VPNTunnel = VPNTunnel(status)
     private lateinit var preferencesDataStore: DataStore<Preferences>
@@ -36,9 +45,45 @@ class DicyVPN : Application() {
         preferencesDataStore = PreferenceDataStoreFactory.create {
             applicationContext.preferencesDataStoreFile("settings")
         }
+
         coroutineScope.launch(Dispatchers.IO) {
             try {
                 backend = GoBackend(applicationContext)
+
+                lastServer.value = preferencesDataStore.data.map { preferences ->
+                    val id = preferences[stringPreferencesKey("lastServer.id")]
+                    if (id == null) {
+                        return@map null
+                    } else {
+                        val name = preferences[stringPreferencesKey("lastServer.name")]!!
+                        val type = API.ServerList.Type.valueOf(preferences[stringPreferencesKey("lastServer.type")]!!)
+                        val country = preferences[stringPreferencesKey("lastServer.country")]!!
+                        val city = preferences[stringPreferencesKey("lastServer.city")]!!
+                        Log.d(TAG, "Loaded last server: $id, $name, $type, $country, $city")
+                        return@map API.ServerList.Server(id, name, type, country, city, 0.0)
+                    }
+                }.first()
+
+                snapshotFlow { lastServer.value }
+                    .onEach {
+                        preferencesDataStore.edit { preferences ->
+                            if (it == null) {
+                                Log.d(TAG, "Removing last server")
+                                preferences.remove(stringPreferencesKey("lastServer.id"))
+                                preferences.remove(stringPreferencesKey("lastServer.name"))
+                                preferences.remove(stringPreferencesKey("lastServer.type"))
+                                preferences.remove(stringPreferencesKey("lastServer.country"))
+                                preferences.remove(stringPreferencesKey("lastServer.city"))
+                            } else {
+                                Log.d(TAG, "Saving last server: ${it.id}")
+                                preferences[stringPreferencesKey("lastServer.id")] = it.id
+                                preferences[stringPreferencesKey("lastServer.name")] = it.name
+                                preferences[stringPreferencesKey("lastServer.type")] = it.type.name
+                                preferences[stringPreferencesKey("lastServer.country")] = it.country
+                                preferences[stringPreferencesKey("lastServer.city")] = it.city
+                            }
+                        }
+                    }.launchIn(this)
             } catch (e: Throwable) {
                 Log.e("DicyVPN/Application", Log.getStackTraceString(e))
             }
@@ -71,6 +116,8 @@ class DicyVPN : Application() {
         fun getPreferencesDataStore() = get().preferencesDataStore
 
         fun getStatus() = get().status
+
+        fun getLastServer() = get().lastServer
 
         fun setTunnelUp(config: String) {
             val instance = get()
