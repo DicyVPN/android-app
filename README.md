@@ -1,3 +1,7 @@
+> [!NOTE]  
+> The source code for Android of DicyVPN has been moved to https://github.com/DicyVPN/app
+
+
 # DicyVPN Android
 Official Android app for DicyVPN
 
